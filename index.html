@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CTU Grade Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #3b82f6;
+    --accent2: #60a5fa;
+    --gold: #f59e0b;
+    --gold2: #fcd34d;
+    --green: #10b981;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --summa: #a78bfa;
+    --magna: #60a5fa;
+    --cum: #34d399;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .school-badge {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #e2e8f0, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* Year/Sem Nav */
+  .nav-tabs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+    background: var(--surface);
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .nav-tab {
+    flex: 1;
+    min-width: 80px;
+    padding: 0.6rem 0.5rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .nav-tab:hover { color: var(--text); border-color: var(--border); }
+  .nav-tab.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  /* Panels */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Semester Card */
+  .sem-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sem-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--summa));
+  }
+
+  .sem-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 1.25rem;
+  }
+
+  /* Subject Table */
+  .subjects-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.25rem;
+    font-size: 0.78rem;
+    table-layout: fixed;
+  }
+
+  .subjects-table th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .subjects-table td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid rgba(30,45,69,0.5);
+    vertical-align: middle;
+  }
+
+  /* Fixed column widths — Subject col takes remaining space */
+  .subjects-table th:nth-child(1),
+  .subjects-table td:nth-child(1) { width: 110px; }
+  .subjects-table th:nth-child(2),
+  .subjects-table td:nth-child(2) { width: auto; }
+  .subjects-table th:nth-child(3),
+  .subjects-table td:nth-child(3) { width: 50px; text-align: center; }
+  .subjects-table th:nth-child(4),
+  .subjects-table td:nth-child(4) { width: 80px; text-align: center; }
+
+  @media (max-width: 480px) {
+    .subjects-table th:nth-child(1),
+    .subjects-table td:nth-child(1) { width: 90px; padding: 0.5rem 0.4rem; }
+    .subjects-table th:nth-child(2),
+    .subjects-table td:nth-child(2) { padding: 0.5rem 0.4rem; }
+    .subjects-table th:nth-child(3),
+    .subjects-table td:nth-child(3) { width: 42px; padding: 0.5rem 0.25rem; text-align: center; }
+    .subjects-table th:nth-child(4),
+    .subjects-table td:nth-child(4) { width: 72px; padding: 0.5rem 0.25rem; text-align: center; }
+
+    .code-badge { font-size: 0.58rem; padding: 0.1rem 0.3rem; white-space: normal; word-break: break-word; }
+    .subject-desc { font-size: 0.68rem; }
+    .grade-input { width: 58px; font-size: 0.75rem; padding: 0.3rem 0.25rem; }
+    .sem-section { padding: 1rem 0.75rem; }
+  }
+
+  .subjects-table tr:last-child td { border-bottom: none; }
+  .subjects-table tr:hover td { background: rgba(59,130,246,0.04); }
+
+  .code-badge {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.15rem 0.4rem;
+    font-size: 0.65rem;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  .subject-desc {
+    color: var(--text);
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  /* Desktop: show full, hide short */
+  .desc-short { display: none; }
+  .desc-full  { display: inline; }
+
+  @media (max-width: 600px) {
+    /* Mobile: hide full, show short */
+    .desc-full  { display: none; }
+    .desc-short { display: inline; }
+  }
+
+  .unit-badge {
+    display: inline-block;
+    color: var(--muted);
+    font-size: 0.7rem;
+    text-align: center;
+    min-width: 30px;
+  }
+
+  .nstp-row td { opacity: 0.55; }
+  .nstp-label {
+    font-size: 0.6rem;
+    color: var(--muted);
+    margin-top: 2px;
+    display: block;
+  }
+
+  /* Grade Input */
+  .grade-input {
+    width: 70px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 0.35rem 0.5rem;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    text-align: center;
+    transition: all 0.2s;
+    outline: none;
+  }
+
+  .grade-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+  }
+
+  .grade-input.invalid { border-color: var(--red); }
+  .grade-input.valid { border-color: var(--green); }
+  .grade-input.failing { border-color: var(--red); background: rgba(239,68,68,0.08); }
+  .grade-input.warning { border-color: var(--gold); background: rgba(245,158,11,0.08); }
+
+  /* GWA Result */
+  .gwa-result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-top: 0.5rem;
+  }
+
+  .gwa-label {
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+  }
+
+  .gwa-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .gwa-value.good { color: var(--green); }
+  .gwa-value.ok { color: var(--gold); }
+  .gwa-value.bad { color: var(--red); }
+  .gwa-value.none { color: var(--muted); }
+
+  .dean-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    border: 1px solid;
+  }
+
+  .dean-status.qualified {
+    background: rgba(16,185,129,0.1);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .dean-status.disqualified {
+    background: rgba(239,68,68,0.1);
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  .dean-status.pending {
+    background: rgba(100,116,139,0.1);
+    border-color: var(--muted);
+    color: var(--muted);
+  }
+
+  .reason-list {
+    font-size: 0.7rem;
+    color: var(--red);
+    margin-top: 0.5rem;
+    list-style: none;
+  }
+
+  .reason-list li::before { content: '↳ '; }
+
+  /* Latin Honors Section */
+  .latin-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .latin-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--summa), var(--gold2));
+  }
+
+  .latin-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold2);
+    margin-bottom: 1.25rem;
+  }
+
+  .latin-progress {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .honor-tier {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .honor-tier.active-tier {
+    border-color: currentColor;
+    box-shadow: 0 0 20px -5px currentColor;
+  }
+
+  .honor-tier.summa { color: var(--summa); }
+  .honor-tier.magna { color: var(--magna); }
+  .honor-tier.cum { color: var(--cum); }
+  .honor-tier.none-tier { color: var(--muted); }
+
+  .honor-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .honor-range {
+    font-size: 0.65rem;
+    opacity: 0.7;
+  }
+
+  .overall-gwa-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+
+  .overall-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+  }
+
+  .progress-bar-wrap {
+    flex: 1;
+    min-width: 150px;
+  }
+
+  .progress-bar-track {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: visible;
+    position: relative;
+    margin-top: 0.5rem;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+    position: relative;
+  }
+
+  .sem-count-info {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+  }
+
+  /* Summary Overview */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .overview-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .overview-card .ov-label {
+    font-size: 0.62rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+  }
+
+  .overview-card .ov-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .subjects-table th:nth-child(1),
+    .subjects-table td:nth-child(1) { display: none; }
+    .grade-input { width: 60px; }
+  }
+
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel.active { animation: fadeIn 0.25s ease; }
+
+  .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+  /* Tooltip for overview cards */
+  .overview-card { position: relative; cursor: default; }
+  .ov-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e2d45;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.65rem;
+    color: var(--text);
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .ov-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%; left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #1e2d45;
+  }
+  .overview-card:hover .ov-tooltip { display: block; }
+
+  /* Academic Distinction section — gold/amber theme */
+  .distinction-section {
+    background: #1a1500;
+    border: 1px solid #92400e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .distinction-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--gold2), var(--gold));
+  }
+  .distinction-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold2);
+    margin-bottom: 0.6rem;
+  }
+  .distinction-subtitle {
+    font-size: 0.68rem;
+    color: #d97706;
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+  }
+  .distinction-progress {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .distinction-tier {
+    background: rgba(245,158,11,0.06);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s;
+    color: #d97706;
+  }
+  .distinction-tier.active-dist-tier {
+    border-color: var(--gold2);
+    box-shadow: 0 0 20px -5px var(--gold);
+    color: var(--gold2);
+  }
+  .distinction-tier .honor-name { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .distinction-tier .honor-range { font-size: 0.65rem; opacity: 0.7; }
+  .distinction-gwa-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background: rgba(245,158,11,0.05);
+    border: 1px solid rgba(245,158,11,0.15);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+  .distinction-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--gold2);
+  }
+  .dist-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    border: 1px solid var(--gold);
+    background: rgba(245,158,11,0.12);
+    color: var(--gold2);
+  }
+  .disq-note {
+    font-size: 0.67rem;
+    color: #d97706;
+    margin-top: 0.5rem;
+    opacity: 0.8;
+  }
+
+  /* ── Footer ── */
+  .site-footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    margin-top: 3rem;
+    padding: 2rem 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    text-align: center;
+  }
+
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .footer-logo-mark {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, var(--accent), var(--summa));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .footer-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    text-align: left;
+  }
+
+  .footer-sub {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-align: left;
+    margin-top: 2px;
+  }
+
+  .footer-divider {
+    width: 40px;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .footer-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .footer-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .footer-credit {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    color: var(--muted);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .footer-link {
+    color: var(--accent2);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(96,165,250,0.25);
+    border-radius: 20px;
+    padding: 0.2rem 0.65rem;
+    transition: all 0.2s;
+    background: rgba(96,165,250,0.06);
+  }
+
+  .footer-link:hover {
+    background: rgba(96,165,250,0.14);
+    border-color: var(--accent2);
+    color: white;
+  }
+
+  .footer-copy {
+    font-size: 0.62rem;
+    color: var(--border);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Verdict Banner (final) ── */
+  .verdict-banner {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    padding: 0 1rem;
+    transform: translateY(-120%);
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+  }
+  .verdict-banner.show { transform: translateY(0); pointer-events: all; }
+  .verdict-inner {
+    margin: 0.75rem auto;
+    max-width: 860px;
+    border-radius: 14px;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    border: 1px solid;
+  }
+  .verdict-banner.vtype-latin .verdict-inner {
+    background: linear-gradient(135deg, #0d1f0d, #081508);
+    border-color: var(--green);
+    box-shadow: 0 8px 40px rgba(16,185,129,0.3);
+  }
+  .verdict-banner.vtype-distinction .verdict-inner {
+    background: linear-gradient(135deg, #1a1200, #120e00);
+    border-color: var(--gold);
+    box-shadow: 0 8px 40px rgba(245,158,11,0.3);
+  }
+  .verdict-banner.vtype-disqualified .verdict-inner {
+    background: linear-gradient(135deg, #1a0808, #110505);
+    border-color: var(--red);
+    box-shadow: 0 8px 40px rgba(239,68,68,0.2);
+  }
+  .verdict-emoji { font-size: 1.8rem; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+  .verdict-content { flex: 1; min-width: 0; }
+  .verdict-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; margin-bottom: 0.2rem; }
+  .verdict-banner.vtype-latin .verdict-title { color: var(--green); }
+  .verdict-banner.vtype-distinction .verdict-title { color: var(--gold2); }
+  .verdict-banner.vtype-disqualified .verdict-title { color: var(--red); }
+  .verdict-subtitle { font-size: 0.72rem; color: var(--text); opacity: 0.85; margin-bottom: 0.3rem; }
+  .verdict-deans { font-size: 0.7rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .verdict-banner.vtype-latin .verdict-deans { color: var(--cum); }
+  .verdict-banner.vtype-distinction .verdict-deans { color: var(--gold2); }
+  .verdict-banner.vtype-disqualified .verdict-deans { color: var(--muted); }
+  .verdict-quote { font-size: 0.67rem; color: var(--muted); font-style: italic; line-height: 1.5; }
+  .verdict-close {
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    color: var(--muted); font-size: 1rem; cursor: pointer;
+    padding: 0.3rem 0.5rem; border-radius: 6px;
+    transition: all 0.2s; flex-shrink: 0; line-height: 1;
+  }
+  .verdict-close:hover { color: var(--text); background: rgba(255,255,255,0.1); }
+
+  /* ── Sem Toast (top-right) ── */
+  .sem-toast {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 999;
+    width: 290px;
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.5);
+    border: 1px solid;
+    transform: translateX(120%);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+  }
+  .sem-toast.show { transform: translateX(0); pointer-events: all; }
+  .sem-toast.toast-qualified {
+    background: linear-gradient(135deg, #0d1f0d, #081508);
+    border-color: var(--green);
+    box-shadow: 0 6px 24px rgba(16,185,129,0.25);
+  }
+  .sem-toast.toast-notqualified {
+    background: linear-gradient(135deg, #1a0808, #110505);
+    border-color: #f97316;
+    box-shadow: 0 6px 24px rgba(249,115,22,0.2);
+  }
+  .toast-emoji { font-size: 1.4rem; line-height: 1; flex-shrink: 0; }
+  .toast-body { flex: 1; min-width: 0; }
+  .toast-title { font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.15rem; }
+  .sem-toast.toast-qualified .toast-title { color: var(--green); }
+  .sem-toast.toast-notqualified .toast-title { color: #f97316; }
+  .toast-msg { font-size: 0.67rem; color: var(--text); opacity: 0.85; line-height: 1.4; margin-bottom: 0.2rem; }
+  .toast-quote { font-size: 0.63rem; color: var(--muted); font-style: italic; line-height: 1.4; }
+  .toast-close {
+    background: none; border: none; color: var(--muted);
+    font-size: 0.9rem; cursor: pointer; padding: 0.1rem 0.3rem;
+    border-radius: 4px; transition: color 0.2s; flex-shrink: 0; line-height: 1;
+  }
+  .toast-close:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- Final Verdict Banner -->
+<div class="verdict-banner" id="verdictBanner">
+  <div class="verdict-inner">
+    <div class="verdict-emoji" id="verdictEmoji"></div>
+    <div class="verdict-content">
+      <div class="verdict-title" id="verdictTitle"></div>
+      <div class="verdict-subtitle" id="verdictSubtitle"></div>
+      <div class="verdict-deans" id="verdictDeans"></div>
+      <div class="verdict-quote" id="verdictQuote"></div>
+    </div>
+    <button class="verdict-close" onclick="dismissVerdict()" title="Dismiss">✕</button>
+  </div>
+</div>
+
+<!-- Sem Toast -->
+<div class="sem-toast" id="semToast">
+  <div class="toast-emoji" id="toastEmoji"></div>
+  <div class="toast-body">
+    <div class="toast-title" id="toastTitle"></div>
+    <div class="toast-msg" id="toastMsg"></div>
+    <div class="toast-quote" id="toastQuote"></div>
+  </div>
+  <button class="toast-close" onclick="dismissToast()" title="Dismiss">✕</button>
+</div>
+<div class="container">
+  <header>
+    <div class="school-badge">CTU Carmen Campus · BIT-CT</div>
+    <h1>Grade Calculator</h1>
+    <p class="subtitle">Developed by &nbsp;<a href="https://www.facebook.com/raymar.sulib.3" target="_blank" rel="noopener" style="color:var(--accent2);text-decoration:none;border-bottom:1px solid rgba(96,165,250,0.4);padding-bottom:1px;transition:color 0.2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--accent2)'">Raymar B. Sulib</a></p>
+  </header>
+
+  <!-- Overview -->
+  <div class="overview-grid" id="overviewGrid">
+    <div class="overview-card">
+      <div class="ov-label">Overall GWA</div>
+      <div class="ov-val" id="ov-gwa" style="color:var(--muted)">—</div>
+      <div class="ov-tooltip">Weighted average across all entered grades</div>
+    </div>
+    <div class="overview-card">
+      <div class="ov-label">Honor Status</div>
+      <div class="ov-val" id="ov-latin" style="color:var(--muted); font-size:0.75rem">—</div>
+      <div class="ov-tooltip">Projected — based on grades entered so far</div>
+    </div>
+    <div class="overview-card">
+      <div class="ov-label">Sems w/ Dean's</div>
+      <div class="ov-val" id="ov-deans" style="color:var(--muted)">0/8</div>
+      <div class="ov-tooltip">Semesters where you qualified for Dean's List (out of 8 total)</div>
+    </div>
+    <div class="overview-card">
+      <div class="ov-label">Grades Entered</div>
+      <div class="ov-val" id="ov-entered" style="color:var(--muted)">0</div>
+      <div class="ov-tooltip">Number of grades entered out of total subjects (excl. NSTP)</div>
+    </div>
+  </div>
+
+  <!-- Nav Tabs -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab(0)">1st Year S1</button>
+    <button class="nav-tab" onclick="switchTab(1)">1st Year S2</button>
+    <button class="nav-tab" onclick="switchTab(2)">2nd Year S1</button>
+    <button class="nav-tab" onclick="switchTab(3)">2nd Year S2</button>
+    <button class="nav-tab" onclick="switchTab(4)">3rd Year S1</button>
+    <button class="nav-tab" onclick="switchTab(5)">3rd Year S2</button>
+    <button class="nav-tab" onclick="switchTab(6)">4th Year S1</button>
+    <button class="nav-tab" onclick="switchTab(7)">4th Year S2</button>
+  </div>
+
+  <!-- Panels -->
+  <div id="panels"></div>
+
+  <!-- Latin Honors -->
+  <div class="latin-section">
+    <div class="latin-title">⭐ Latin Honors Tracker</div>
+    <div class="latin-progress">
+      <div class="honor-tier summa" id="tier-summa">
+        <div class="honor-name">Summa Cum Laude</div>
+        <div class="honor-range">GWA: 1.000 – 1.200</div>
+      </div>
+      <div class="honor-tier magna" id="tier-magna">
+        <div class="honor-name">Magna Cum Laude</div>
+        <div class="honor-range">GWA: 1.201 – 1.450</div>
+      </div>
+      <div class="honor-tier cum" id="tier-cum">
+        <div class="honor-name">Cum Laude</div>
+        <div class="honor-range">GWA: 1.451 – 1.750</div>
+      </div>
+    </div>
+    <div class="overall-gwa-display">
+      <div>
+        <div class="gwa-label">Overall GWA (All Years)</div>
+        <div class="overall-num" id="latin-gwa" style="color:var(--muted)">—</div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="gwa-label">Progress toward honors</div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="latin-bar" style="width:0%;background:var(--muted)"></div>
+        </div>
+        <div class="sem-count-info" id="latin-info">Enter grades across all semesters to compute</div>
+      </div>
+      <div id="latin-badge" class="dean-status pending"><span class="dot"></span> Not yet computed</div>
+    </div>
+  </div>
+
+  <!-- Academic Distinction -->
+  <div class="distinction-section" id="distinction-section" style="display:none;">
+    <div class="distinction-title">🏅 Academic Distinction</div>
+    <div class="distinction-subtitle" id="distinction-subtitle">
+      Your GWA qualifies for honors, but a grade of 2.6 or above in one or more subjects disqualifies you from Latin Honors.
+      You may be eligible for <strong style="color:var(--gold2);">Academic Distinction</strong> instead.
+    </div>
+    <div class="distinction-progress">
+      <div class="distinction-tier" id="dist-tier-highest">
+        <div class="honor-name">With Highest Honors</div>
+        <div class="honor-range">GWA: 1.000 – 1.200</div>
+      </div>
+      <div class="distinction-tier" id="dist-tier-high">
+        <div class="honor-name">With High Honors</div>
+        <div class="honor-range">GWA: 1.201 – 1.450</div>
+      </div>
+      <div class="distinction-tier" id="dist-tier-honors">
+        <div class="honor-name">With Honors</div>
+        <div class="honor-range">GWA: 1.451 – 1.750</div>
+      </div>
+    </div>
+    <div class="distinction-gwa-display">
+      <div>
+        <div class="gwa-label">Overall GWA (All Years)</div>
+        <div class="distinction-num" id="dist-gwa">—</div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="gwa-label">Progress toward distinction</div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="dist-bar" style="width:0%;background:var(--gold)"></div>
+        </div>
+        <div class="sem-count-info" id="dist-info"></div>
+      </div>
+      <div>
+        <div class="dist-badge" id="dist-badge"><span class="dot" style="background:var(--gold2)"></span> —</div>
+        <div class="disq-note" id="dist-note"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-logo-mark">GC</div>
+      <div>
+        <div class="footer-title">CTU Grade Calculator</div>
+        <div class="footer-sub">BIT — Computer Technology · Carmen Campus</div>
+      </div>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-meta">
+      <span class="footer-chip">Dean's List Tracker</span>
+      <span class="footer-chip">Latin Honors Tracker</span>
+      <span class="footer-chip">GWA Calculator</span>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-credit">
+      <span>Designed &amp; developed by</span>
+      <a href="https://www.facebook.com/raymar.sulib.3" target="_blank" rel="noopener" class="footer-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px;"><path d="M24 12.073C24 5.406 18.627 0 12 0S0 5.406 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.269h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+        Raymar B. Sulib
+      </a>
+    </div>
+    <div class="footer-copy">© 2025 · For academic use by CTU-Carmen BIT-CT students</div>
+  </div>
+</footer>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const SEMESTERS = [
+  {
+    label: "1st Semester SY 2023-2024",
+    subjects: [
+      { code: "GEC-PC",       desc: "Purposive Communication", units: 3 },
+      { code: "GEC-STS",      desc: "Science, Technology and Society", units: 3 },
+      { code: "GEC-US",       desc: "Understanding the Self", units: 3 },
+      { code: "DRAW 111",     desc: "Fundamentals of Technical Drawing and Sketching", short: "Tech Drawing & Sketching", units: 1 },
+      { code: "COMPTECH 111", desc: "Computer Electronics", units: 7 },
+      { code: "AST 111",      desc: "Fundamentals of Electrical and Electronics", short: "Electrical & Electronics", units: 3 },
+      { code: "PATHFIT 1",    desc: "Physical Activities Towards Health and Fitness 1: Movement Competency Training", short: "PATHFIT 1", units: 2 },
+      { code: "NSTP 1",       desc: "National Service Training Program 1 (CWTS 1/LTS 1/ROTC 1)", short: "NSTP 1", units: 3, nstp: true },
+    ]
+  },
+  {
+    label: "2nd Semester SY 2023-2024",
+    subjects: [
+      { code: "CompTech 122", desc: "Computer Systems", units: 7 },
+      { code: "DRAW 122",     desc: "Advanced Technical Drawing and Blueprint Reading", short: "Adv. Tech Drawing", units: 1 },
+      { code: "COMP 1",       desc: "Office Productivity Application Software", short: "Office Productivity", units: 3 },
+      { code: "AST 122",      desc: "Digital Electronics", units: 3 },
+      { code: "GEC-RPH",      desc: "Readings in Philippine History", short: "Philippine History", units: 3 },
+      { code: "GEC-E",        desc: "Ethics", units: 3 },
+      { code: "PATHFIT 2",    desc: "Physical Activities Towards Health and Fitness 2: Exercise-Based Fitness Activities", short: "PATHFIT 2", units: 2 },
+      { code: "NSTP 2",       desc: "National Service Training Program 2 (CWTS 2/LTS 2/ROTC 2)", short: "NSTP 2", units: 3, nstp: true },
+    ]
+  },
+  {
+    label: "1st Semester SY 2024-2025",
+    subjects: [
+      { code: "GEC-TCW",      desc: "The Contemporary World", units: 3 },
+      { code: "GEC-AA",       desc: "Art Appreciation", units: 3 },
+      { code: "GEE-LIE",      desc: "Living in the IT Era", units: 3 },
+      { code: "COMPTECH 213", desc: "Computer Network and Security", units: 7 },
+      { code: "CTC 211",      desc: "Fundamentals of Programming", short: "Fund. of Programming", units: 2 },
+      { code: "DRAW 213",     desc: "Computer-Aided Design 1 (CAD 1)", short: "CAD 1", units: 1 },
+      { code: "AST 213",      desc: "Basic Pneumatics / Hydraulics", units: 1 },
+      { code: "PATHFIT 3",    desc: "Physical Activities Towards Health and Fitness 3: Dance/Sports/Martial Arts/Group Exercise/Outdoor and Adventure Activities", short: "PATHFIT 3", units: 2 },
+    ]
+  },
+  {
+    label: "2nd Semester SY 2024-2025",
+    subjects: [
+      { code: "COMPTECH 224", desc: "Programming", units: 7 },
+      { code: "CTC 222",      desc: "Programming Logic and Design", short: "Prog. Logic & Design", units: 1 },
+      { code: "CTC 223",      desc: "Logic Circuits", units: 1 },
+      { code: "DRAW 224",     desc: "Computer-Aided Design 2 (CAD 2)", short: "CAD 2", units: 1 },
+      { code: "AST 224",      desc: "Programmable Logic Controller", short: "PLC", units: 1 },
+      { code: "GEE-ES",       desc: "Environmental Science", units: 3 },
+      { code: "GEC-MMW",      desc: "Mathematics in the Modern World", short: "Math in Modern World", units: 3 },
+      { code: "PATHFIT 4",    desc: "Physical Activities Towards Health and Fitness 4: Dance/Sports/Martial Arts/Group Exercise/Outdoor and Adventure Activities", short: "PATHFIT 4", units: 2 },
+    ]
+  },
+  {
+    label: "1st Semester SY 2025-2026",
+    subjects: [
+      { code: "AST 315",      desc: "Workshop Management", units: 3 },
+      { code: "GEE-FE",       desc: "Functional English", units: 3 },
+      { code: "IM 311",       desc: "Fundamentals of Research", short: "Fund. of Research", units: 3 },
+      { code: "IM 312",       desc: "Industrial Psychology and Group Dynamics", short: "Ind. Psychology", units: 3 },
+      { code: "IM 313",       desc: "Occupational Safety and Health", short: "Occ. Safety & Health", units: 3 },
+      { code: "IM 314",       desc: "Shop Supervision and Apprenticeship Training", short: "Shop Supervision", units: 3 },
+      { code: "COMPTECH 315", desc: "Microprocessor Systems", units: 7 },
+      { code: "FOLA 1",       desc: "Foreign Language 1 (Nihongo/Korean/Chinese/Spanish/German 1)", short: "Foreign Language 1", units: 3 },
+    ]
+  },
+  {
+    label: "2nd Semester SY 2025-2026",
+    subjects: [
+      { code: "CompTech 326", desc: "Embedded Systems", units: 7 },
+      { code: "IM 325",       desc: "Industrial Organization and Management", short: "Ind. Org. & Mgmt", units: 3 },
+      { code: "IM 326",       desc: "Personnel Administration", units: 3 },
+      { code: "IM 327",       desc: "Organizational Behavior and Work Ethics", short: "Org. Behavior", units: 3 },
+      { code: "IM 328",       desc: "Product Output (Research)", units: 3 },
+      { code: "AST 326",      desc: "Emerging Technologies", units: 3 },
+      { code: "GEC-LWR",      desc: "Life and Works of Rizal", short: "Life & Works of Rizal", units: 3 },
+      { code: "FOLA 2",       desc: "Foreign Language 2 (Nihongo/Korean/Chinese/Spanish/German 2)", short: "Foreign Language 2", units: 3 },
+      { code: "GEE-TEM",      desc: "The Entrepreneurial Mind", units: 3 },
+    ]
+  },
+  {
+    label: "1st Semester SY 2026-2027",
+    subjects: [
+      { code: "OJT 411", desc: "On-the-Job Training 1", units: 15 },
+    ]
+  },
+  {
+    label: "2nd Semester SY 2026-2027",
+    subjects: [
+      { code: "OJT 422", desc: "On-the-Job Training 2", units: 15 },
+    ]
+  },
+];
+
+// Store grades: grades[semIdx][subjectIdx] = value or ''
+const grades = SEMESTERS.map(s => s.subjects.map(() => ''));
+
+// ─── BUILD UI ─────────────────────────────────────────────────────────────────
+function buildPanels() {
+  const container = document.getElementById('panels');
+  SEMESTERS.forEach((sem, si) => {
+    const panel = document.createElement('div');
+    panel.className = 'panel' + (si === 0 ? ' active' : '');
+    panel.id = `panel-${si}`;
+
+    const totalUnits = sem.subjects.filter(s => !s.nstp).reduce((a, s) => a + s.units, 0);
+
+    panel.innerHTML = `
+      <div class="sem-section">
+        <div class="sem-title">${sem.label}</div>
+        <table class="subjects-table">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Descriptive Title</th>
+              <th>Units</th>
+              <th>Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sem.subjects.map((s, idx) => `
+              <tr class="${s.nstp ? 'nstp-row' : ''}" id="row-${si}-${idx}">
+                <td><span class="code-badge">${s.code}</span></td>
+                <td>
+                  <span class="subject-desc desc-full">${s.desc}</span>
+                  ${s.short ? `<span class="subject-desc desc-short">${s.short}</span>` : `<span class="subject-desc desc-short">${s.desc}</span>`}
+                  ${s.nstp ? '<span class="nstp-label">excluded from GWA</span>' : ''}
+                </td>
+                <td><span class="unit-badge">${s.units}</span></td>
+                <td>
+                  <input
+                    class="grade-input"
+                    type="number"
+                    min="1.0" max="5.0" step="0.1"
+                    placeholder="—"
+                    id="g-${si}-${idx}"
+                    ${s.nstp ? '' : ''}
+                    oninput="onGradeInput(${si},${idx},this.value)"
+                    value="${grades[si][idx]}"
+                  >
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div class="gwa-result" id="result-${si}">
+          <div>
+            <div class="gwa-label">Semester GWA</div>
+            <div class="gwa-value none" id="gwa-${si}">—</div>
+          </div>
+          <div id="dean-wrap-${si}">
+            <div class="dean-status pending"><span class="dot"></span> Awaiting grades</div>
+            <ul class="reason-list" id="reasons-${si}"></ul>
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(panel);
+  });
+}
+
+// ─── LOGIC ────────────────────────────────────────────────────────────────────
+function isValidGrade(v) {
+  const n = parseFloat(v);
+  return !isNaN(n) && n >= 1.0 && n <= 5.0;
+}
+
+// 3.1+ = failed (disqualifies from everything)
+function isFailed(v) {
+  const n = parseFloat(v);
+  return n >= 3.1;
+}
+
+// 2.6–3.0 = disqualifies from Latin Honors & DL, but not Academic Distinction
+function isDisqualifying(v) {
+  const n = parseFloat(v);
+  return n > 2.5 && n < 3.1;
+}
+
+function computeSemGWA(si) {
+  const sem = SEMESTERS[si];
+  let weightedSum = 0, totalUnits = 0;
+  sem.subjects.forEach((s, idx) => {
+    if (s.nstp) return;
+    const g = grades[si][idx];
+    if (g === '' || !isValidGrade(g)) return;
+    weightedSum += parseFloat(g) * s.units;
+    totalUnits += s.units;
+  });
+  if (totalUnits === 0) return null;
+  return weightedSum / totalUnits;
+}
+
+function computeOverallGWA() {
+  let totalWeighted = 0, totalUnits = 0;
+  SEMESTERS.forEach((sem, si) => {
+    sem.subjects.forEach((s, idx) => {
+      if (s.nstp) return;
+      const g = grades[si][idx];
+      if (g === '' || !isValidGrade(g)) return;
+      totalWeighted += parseFloat(g) * s.units;
+      totalUnits += s.units;
+    });
+  });
+  if (totalUnits === 0) return null;
+  return totalWeighted / totalUnits;
+}
+
+// Total non-NSTP subjects count
+function getTotalSubjects() {
+  return SEMESTERS.reduce((a, sem) => a + sem.subjects.filter(s => !s.nstp).length, 0);
+}
+
+// Count entered valid grades
+function getEnteredCount() {
+  let count = 0;
+  SEMESTERS.forEach((sem, si) => sem.subjects.forEach((s, idx) => {
+    if (!s.nstp && grades[si][idx] !== '' && isValidGrade(grades[si][idx])) count++;
+  }));
+  return count;
+}
+
+// Check all grades across all semesters for disqualifying/failed
+function checkAllGradesForHonors() {
+  let hasFailed = false;      // 3.1+
+  let hasDisqualifying = false; // 2.6–3.0
+  let failedSubjects = [];
+  let disqualifyingSubjects = [];
+
+  SEMESTERS.forEach((sem, si) => {
+    sem.subjects.forEach((s, idx) => {
+      if (s.nstp) return;
+      const g = grades[si][idx];
+      if (g === '' || !isValidGrade(g)) return;
+      if (isFailed(g)) {
+        hasFailed = true;
+        failedSubjects.push(`${s.code} (${parseFloat(g).toFixed(1)})`);
+      } else if (isDisqualifying(g)) {
+        hasDisqualifying = true;
+        disqualifyingSubjects.push(`${s.code} (${parseFloat(g).toFixed(1)})`);
+      }
+    });
+  });
+
+  return { hasFailed, hasDisqualifying, failedSubjects, disqualifyingSubjects };
+}
+
+function getHonorLabel(gwa) {
+  if (gwa <= 1.200) return { latin: 'Summa Cum Laude', dist: 'With Highest Honors', tier: 'summa' };
+  if (gwa <= 1.450) return { latin: 'Magna Cum Laude', dist: 'With High Honors', tier: 'magna' };
+  if (gwa <= 1.750) return { latin: 'Cum Laude', dist: 'With Honors', tier: 'cum' };
+  return null;
+}
+
+function checkDeansListEligibility(si) {
+  const sem = SEMESTERS[si];
+  const reasons = [];
+  let allEntered = true;
+
+  sem.subjects.forEach((s, idx) => {
+    if (s.nstp) return;
+    const g = grades[si][idx];
+    if (g === '') { allEntered = false; return; }
+    if (!isValidGrade(g)) { allEntered = false; return; }
+    const n = parseFloat(g);
+    if (n >= 3.1) reasons.push(`Failed grade in ${s.code}: ${n} (${s.desc})`);
+    else if (n > 2.5) reasons.push(`Grade above 2.5 in ${s.code}: ${n} (${s.desc})`);
+  });
+
+  const gwa = computeSemGWA(si);
+  if (gwa !== null && gwa > 1.750) reasons.push(`GWA of ${gwa.toFixed(4)} exceeds 1.750 cutoff`);
+
+  return { qualified: allEntered && reasons.length === 0, allEntered, reasons };
+}
+
+function updateSemDisplay(si) {
+  const gwa = computeSemGWA(si);
+  const gwaEl = document.getElementById(`gwa-${si}`);
+  const deanWrap = document.getElementById(`dean-wrap-${si}`);
+
+  // Color inputs
+  const sem = SEMESTERS[si];
+  sem.subjects.forEach((s, idx) => {
+    const inp = document.getElementById(`g-${si}-${idx}`);
+    if (!inp) return;
+    const v = grades[si][idx];
+    inp.classList.remove('valid','invalid','failing','warning');
+    if (v === '') return;
+    if (!isValidGrade(v)) { inp.classList.add('invalid'); return; }
+    const n = parseFloat(v);
+    if (n >= 3.1) inp.classList.add('failing');
+    else if (n > 2.5) inp.classList.add('warning');
+    else inp.classList.add('valid');
+  });
+
+  if (gwa === null) {
+    gwaEl.textContent = '—';
+    gwaEl.className = 'gwa-value none';
+    deanWrap.innerHTML = '<div class="dean-status pending"><span class="dot"></span> Awaiting grades</div>';
+    return;
+  }
+
+  gwaEl.textContent = gwa.toFixed(4);
+  gwaEl.className = 'gwa-value ' + (gwa <= 1.75 ? 'good' : gwa <= 2.5 ? 'ok' : 'bad');
+
+  const { qualified, allEntered, reasons } = checkDeansListEligibility(si);
+
+  if (!allEntered && reasons.length === 0) {
+    deanWrap.innerHTML = `<div class="dean-status pending"><span class="dot"></span> Enter all grades</div>`;
+  } else if (qualified) {
+    const distinction = gwa <= 1.200 ? 'With Highest Honors'
+                      : gwa <= 1.450 ? 'With High Honors'
+                      : 'With Honors';
+    deanWrap.innerHTML = `<div class="dean-status qualified"><span class="dot"></span> Dean's Lister — ${distinction} ✓</div>`;
+  } else {
+    deanWrap.innerHTML = `
+      <div class="dean-status disqualified"><span class="dot"></span> Not Qualified</div>
+      <ul class="reason-list" id="reasons-${si}"></ul>
+    `;
+    const rl = document.getElementById(`reasons-${si}`);
+    if (rl) reasons.forEach(r => { const li = document.createElement('li'); li.textContent = r; rl.appendChild(li); });
+  }
+}
+
+function updateLatinHonors() {
+  const gwa = computeOverallGWA();
+  const latinGwaEl = document.getElementById('latin-gwa');
+  const latinBar = document.getElementById('latin-bar');
+  const latinInfo = document.getElementById('latin-info');
+  const latinBadge = document.getElementById('latin-badge');
+  const distSection = document.getElementById('distinction-section');
+  const distGwaEl = document.getElementById('dist-gwa');
+  const distBar = document.getElementById('dist-bar');
+  const distInfo = document.getElementById('dist-info');
+  const distBadge = document.getElementById('dist-badge');
+  const distNote = document.getElementById('dist-note');
+
+  const enteredCount = getEnteredCount();
+  const totalSubjects = getTotalSubjects();
+
+  // Reset tiers
+  ['summa','magna','cum'].forEach(t => document.getElementById(`tier-${t}`).classList.remove('active-tier'));
+  ['highest','high','honors'].forEach(t => document.getElementById(`dist-tier-${t}`).classList.remove('active-dist-tier'));
+
+  // Hide distinction section by default
+  distSection.style.display = 'none';
+
+  if (gwa === null) {
+    latinGwaEl.textContent = '—';
+    latinGwaEl.style.color = 'var(--muted)';
+    latinBar.style.width = '0%';
+    latinBar.style.background = 'var(--muted)';
+    latinInfo.textContent = `${enteredCount}/${totalSubjects} subjects entered`;
+    latinBadge.className = 'dean-status pending';
+    latinBadge.innerHTML = '<span class="dot"></span> Not yet computed';
+    return;
+  }
+
+  latinGwaEl.textContent = gwa.toFixed(4);
+  latinInfo.textContent = `${enteredCount}/${totalSubjects} subjects entered`;
+
+  const pct = Math.max(0, Math.min(100, ((1.75 - gwa) / 0.75) * 100));
+  latinBar.style.width = pct + '%';
+
+  const { hasFailed, hasDisqualifying, failedSubjects, disqualifyingSubjects } = checkAllGradesForHonors();
+  const honorLabel = getHonorLabel(gwa);
+
+  if (hasFailed) {
+    // Failed grade — disqualified from EVERYTHING
+    latinGwaEl.style.color = 'var(--red)';
+    latinBar.style.background = 'var(--red)';
+    latinBadge.className = 'dean-status disqualified';
+    latinBadge.innerHTML = `<span class="dot"></span> Disqualified — Failed grade (${failedSubjects.join(', ')})`;
+    distSection.style.display = 'none';
+  } else if (hasDisqualifying && honorLabel) {
+    // GWA in range but has 2.6–3.0 → Academic Distinction, not Latin Honors
+    latinGwaEl.style.color = 'var(--red)';
+    latinBar.style.background = 'var(--red)';
+    latinBadge.className = 'dean-status disqualified';
+    latinBadge.innerHTML = `<span class="dot"></span> Disqualified from Latin Honors — grade above 2.5 (${disqualifyingSubjects.join(', ')})`;
+
+    // Show Academic Distinction section
+    distSection.style.display = 'block';
+    distGwaEl.textContent = gwa.toFixed(4);
+    distInfo.textContent = `${enteredCount}/${totalSubjects} subjects entered`;
+    const distPct = Math.max(0, Math.min(100, ((1.75 - gwa) / 0.75) * 100));
+    distBar.style.width = distPct + '%';
+
+    if (honorLabel.tier === 'summa') {
+      document.getElementById('dist-tier-highest').classList.add('active-dist-tier');
+      distBadge.innerHTML = `<span class="dot" style="background:var(--gold2)"></span> Academic Distinction — With Highest Honors`;
+    } else if (honorLabel.tier === 'magna') {
+      document.getElementById('dist-tier-high').classList.add('active-dist-tier');
+      distBadge.innerHTML = `<span class="dot" style="background:var(--gold2)"></span> Academic Distinction — With High Honors`;
+    } else {
+      document.getElementById('dist-tier-honors').classList.add('active-dist-tier');
+      distBadge.innerHTML = `<span class="dot" style="background:var(--gold2)"></span> Academic Distinction — With Honors`;
+    }
+    distNote.textContent = `Disqualifying subject(s): ${disqualifyingSubjects.join(', ')}`;
+  } else if (!hasDisqualifying && !hasFailed && honorLabel) {
+    // Clean — Latin Honors
+    const colors = { summa: 'var(--summa)', magna: 'var(--magna)', cum: 'var(--cum)' };
+    const c = colors[honorLabel.tier];
+    latinGwaEl.style.color = c;
+    latinBar.style.background = c;
+    latinBadge.className = 'dean-status qualified';
+    latinBadge.innerHTML = `<span class="dot"></span> ${honorLabel.latin}`;
+    document.getElementById(`tier-${honorLabel.tier}`).classList.add('active-tier');
+  } else {
+    // GWA out of range
+    latinGwaEl.style.color = 'var(--red)';
+    latinBar.style.background = 'var(--red)';
+    latinBadge.className = 'dean-status disqualified';
+    latinBadge.innerHTML = '<span class="dot"></span> No Latin Honor — GWA exceeds 1.750';
+  }
+}
+
+function updateOverview() {
+  const gwa = computeOverallGWA();
+  const ovGwa = document.getElementById('ov-gwa');
+  const ovLatin = document.getElementById('ov-latin');
+  const ovDeans = document.getElementById('ov-deans');
+  const ovEntered = document.getElementById('ov-entered');
+
+  const enteredCount = getEnteredCount();
+  const totalSubjects = getTotalSubjects();
+
+  // GWA
+  if (gwa !== null) {
+    ovGwa.textContent = gwa.toFixed(3);
+    ovGwa.style.color = gwa <= 1.75 ? 'var(--green)' : gwa <= 2.5 ? 'var(--gold)' : 'var(--red)';
+  } else {
+    ovGwa.textContent = '—';
+    ovGwa.style.color = 'var(--muted)';
+  }
+
+  // Honor Status (projected)
+  if (gwa !== null) {
+    const { hasFailed, hasDisqualifying } = checkAllGradesForHonors();
+    const honorLabel = getHonorLabel(gwa);
+
+    if (hasFailed) {
+      ovLatin.textContent = 'Disqualified';
+      ovLatin.style.color = 'var(--red)';
+      ovLatin.style.fontSize = '0.75rem';
+    } else if (hasDisqualifying && honorLabel) {
+      const shortDist = honorLabel.tier === 'summa' ? 'Dist. Highest'
+                      : honorLabel.tier === 'magna' ? 'Dist. High'
+                      : 'Dist. Honors';
+      ovLatin.textContent = shortDist;
+      ovLatin.style.color = 'var(--gold2)';
+      ovLatin.style.fontSize = '0.72rem';
+    } else if (honorLabel) {
+      const shortLatin = { summa: 'Summa CL', magna: 'Magna CL', cum: 'Cum Laude' };
+      const colors = { summa: 'var(--summa)', magna: 'var(--magna)', cum: 'var(--cum)' };
+      ovLatin.textContent = shortLatin[honorLabel.tier];
+      ovLatin.style.color = colors[honorLabel.tier];
+      ovLatin.style.fontSize = '0.75rem';
+    } else {
+      ovLatin.textContent = 'None';
+      ovLatin.style.color = 'var(--red)';
+      ovLatin.style.fontSize = '0.85rem';
+    }
+  } else {
+    ovLatin.textContent = '—';
+    ovLatin.style.color = 'var(--muted)';
+    ovLatin.style.fontSize = '0.85rem';
+  }
+
+  // Dean's count
+  let deansCount = 0;
+  SEMESTERS.forEach((sem, si) => {
+    const { qualified } = checkDeansListEligibility(si);
+    if (qualified) deansCount++;
+  });
+  ovDeans.textContent = `${deansCount}/8`;
+  ovDeans.style.color = deansCount > 0 ? 'var(--green)' : 'var(--muted)';
+
+  // Grades entered with total
+  ovEntered.textContent = `${enteredCount}/${totalSubjects}`;
+  ovEntered.style.color = enteredCount > 0 ? 'var(--accent2)' : 'var(--muted)';
+  ovEntered.style.fontSize = '1rem';
+}
+
+// ─── PERSISTENCE ─────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'ctu_grades_v1';
+function saveGrades() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(grades));
+}
+function loadGrades() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    const parsed = JSON.parse(saved);
+    parsed.forEach((semGrades, si) => {
+      if (!grades[si]) return;
+      semGrades.forEach((g, idx) => {
+        if (grades[si][idx] !== undefined) grades[si][idx] = g;
+      });
+    });
+  } catch(e) {}
+}
+
+// ─── QUOTES ──────────────────────────────────────────────────────────────────
+const SEM_QUOTES = {
+  qualified: [
+    "Consistency is the key to greatness. Keep it up! 🔥",
+    "Another semester, another win. You're on a roll! 💪",
+    "Hard work pays off. This is proof. 🌟",
+    "Stay focused — you're building something great semester by semester.",
+    "Excellence isn't an accident. This shows it. 🏆"
+  ],
+  notqualified: [
+    "One semester doesn't define your whole story. Keep going! 💙",
+    "Every stumble is a setup for a comeback. Rise up. 🔥",
+    "The road to success isn't always straight. You're still on it. 💪",
+    "Don't let one setback write your ending. Keep pushing forward.",
+    "Reflect, regroup, and come back stronger next semester. 🌱"
+  ]
+};
+const VERDICT_QUOTES = {
+  latin_summa: [
+    "Perfect excellence. You didn't just meet the standard — you set it. 🌟",
+    "The pinnacle of academic achievement. Truly extraordinary.",
+    "Some aim for the stars. You built a rocket and flew past them. 🚀"
+  ],
+  latin_magna: [
+    "Outstanding dedication. Magna Cum Laude — you earned every bit of it.",
+    "You turned consistency into greatness. Wear this honor proudly. 🏆",
+    "Hard work, discipline, and brilliance — that's what Magna Cum Laude looks like."
+  ],
+  latin_cum: [
+    "Cum Laude — proof that persistence and effort truly pay off. 🎓",
+    "You pushed through every challenge and came out with honors. Incredible.",
+    "Not everyone finishes with distinction. You did. Be proud."
+  ],
+  distinction_summa: [
+    "Your GWA is elite. Academic Distinction with Highest Honors — still a crown worth wearing. 🌟",
+    "One grade stood between you and Latin Honors, but your achievement still shines.",
+    "Highest distinction. Four years of hard work, undeniable."
+  ],
+  distinction_magna: [
+    "Academic Distinction with High Honors — your effort speaks volumes. 🏅",
+    "Not every road to honors is straight. Yours is still remarkable.",
+    "High Honors isn't a consolation — it's a real achievement. Own it."
+  ],
+  distinction_cum: [
+    "Academic Distinction with Honors — a recognition you genuinely earned. 🎖️",
+    "Honors isn't a lesser path. It's proof you showed up and gave it your all.",
+    "Every grade is a story. Yours ends with distinction. Be proud."
+  ],
+  nogwa: [
+    "Grades are just numbers. Your journey, growth, and effort define you far more. 💪",
+    "Not every chapter ends where we planned — but every chapter teaches us something.",
+    "The degree itself is the achievement. Don't let a number take that from you."
+  ],
+  failed: [
+    "A failed grade doesn't define you. What you do next does. Keep going. 💙",
+    "Everyone stumbles. The ones who rise again are the ones who truly grow.",
+    "This is not your final chapter. Regroup, reflect, and come back stronger. 🔥"
+  ]
+};
+function getRand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// ─── SEM TOAST ───────────────────────────────────────────────────────────────
+let toastDismissed = {};  // tracks dismissed state per sem index
+
+function isSemComplete(si) {
+  const sem = SEMESTERS[si];
+  return sem.subjects.every((s, idx) => {
+    if (s.nstp) return true;
+    const g = grades[si][idx];
+    return g !== '' && isValidGrade(g);
+  });
+}
+
+function dismissToast() {
+  document.getElementById('semToast').classList.remove('show');
+}
+
+function showSemToast(si) {
+  if (!isSemComplete(si)) {
+    // Sem incomplete — hide toast if it was showing for this sem
+    const toast = document.getElementById('semToast');
+    if (toast.dataset.sem == si) toast.classList.remove('show');
+    return;
+  }
+
+  const toast = document.getElementById('semToast');
+  const { qualified } = checkDeansListEligibility(si);
+  const semLabel = SEMESTERS[si].label;
+  const gwa = computeSemGWA(si);
+
+  toast.classList.remove('toast-qualified', 'toast-notqualified', 'show');
+  toast.dataset.sem = si;
+
+  if (qualified) {
+    const distinction = gwa <= 1.200 ? 'With Highest Honors'
+                      : gwa <= 1.450 ? 'With High Honors'
+                      : 'With Honors';
+    toast.classList.add('toast-qualified');
+    document.getElementById('toastEmoji').textContent = '🎉';
+    document.getElementById('toastTitle').textContent = `Dean's Lister — ${distinction}!`;
+    document.getElementById('toastMsg').textContent = `${semLabel} · GWA: ${gwa.toFixed(4)}`;
+    document.getElementById('toastQuote').textContent = `"${getRand(SEM_QUOTES.qualified)}"`;
+  } else {
+    toast.classList.add('toast-notqualified');
+    document.getElementById('toastEmoji').textContent = '💙';
+    document.getElementById('toastTitle').textContent = 'Not Qualified This Semester';
+    document.getElementById('toastMsg').textContent = `${semLabel} · GWA: ${gwa.toFixed(4)}`;
+    document.getElementById('toastQuote').textContent = `"${getRand(SEM_QUOTES.notqualified)}"`;
+  }
+
+  // Small delay so it feels natural
+  setTimeout(() => toast.classList.add('show'), 100);
+}
+
+// ─── VERDICT BANNER ───────────────────────────────────────────────────────────
+let verdictDismissed = false;
+function dismissVerdict() {
+  verdictDismissed = true;
+  document.getElementById('verdictBanner').classList.remove('show');
+}
+function getDeansMessage(deansCount, semsWithGrades) {
+  if (deansCount === semsWithGrades) return `🏫 Dean's List: All ${semsWithGrades} semesters qualified! Perfect attendance on the Dean's List!`;
+  if (deansCount === 0) return `🏫 Dean's List: Did not qualify for any semester — finishing the degree is still a real achievement.`;
+  return `🏫 Dean's List: Qualified in ${deansCount} out of ${semsWithGrades} semester${deansCount > 1 ? 's' : ''} (missed ${semsWithGrades - deansCount}).`;
+}
+function updateVerdictBanner() {
+  const banner = document.getElementById('verdictBanner');
+  const enteredCount = getEnteredCount();
+  const totalSubjects = getTotalSubjects();
+  const allEntered = enteredCount >= totalSubjects && totalSubjects > 0;
+
+  if (!allEntered) { verdictDismissed = false; banner.classList.remove('show'); return; }
+  if (verdictDismissed) return;
+
+  let deansCount = 0, semsWithGrades = 0;
+  SEMESTERS.forEach((sem, si) => {
+    if (computeSemGWA(si) !== null) {
+      semsWithGrades++;
+      if (checkDeansListEligibility(si).qualified) deansCount++;
+    }
+  });
+
+  const gwa = computeOverallGWA();
+  const { hasFailed, hasDisqualifying, failedSubjects, disqualifyingSubjects } = checkAllGradesForHonors();
+  const honorLabel = getHonorLabel(gwa);
+
+  banner.classList.remove('vtype-latin', 'vtype-distinction', 'vtype-disqualified');
+
+  if (hasFailed) {
+    banner.classList.add('vtype-disqualified');
+    document.getElementById('verdictEmoji').textContent = '💙';
+    document.getElementById('verdictTitle').textContent = 'All grades entered — Disqualified from Honors';
+    document.getElementById('verdictSubtitle').textContent = `A failed grade (3.1+) in ${failedSubjects.join(', ')} disqualifies you from both Latin Honors and Academic Distinction.`;
+    document.getElementById('verdictDeans').textContent = getDeansMessage(deansCount, semsWithGrades);
+    document.getElementById('verdictQuote').textContent = `"${getRand(VERDICT_QUOTES.failed)}"`;
+  } else if (!honorLabel) {
+    banner.classList.add('vtype-disqualified');
+    document.getElementById('verdictEmoji').textContent = '📋';
+    document.getElementById('verdictTitle').textContent = 'All grades entered — No Latin Honor';
+    document.getElementById('verdictSubtitle').textContent = `Overall GWA of ${gwa.toFixed(4)} is outside the honors range (above 1.750). Completing your degree is still a real achievement.`;
+    document.getElementById('verdictDeans').textContent = getDeansMessage(deansCount, semsWithGrades);
+    document.getElementById('verdictQuote').textContent = `"${getRand(VERDICT_QUOTES.nogwa)}"`;
+  } else if (hasDisqualifying) {
+    banner.classList.add('vtype-distinction');
+    const distLabels = { summa: 'With Highest Honors', magna: 'With High Honors', cum: 'With Honors' };
+    document.getElementById('verdictEmoji').textContent = '🏅';
+    document.getElementById('verdictTitle').textContent = `Academic Distinction — ${distLabels[honorLabel.tier]}!`;
+    document.getElementById('verdictSubtitle').textContent = `GWA of ${gwa.toFixed(4)} qualifies for honors, but ${disqualifyingSubjects.join(', ')} has a grade above 2.5, disqualifying you from Latin Honors. You've earned Academic Distinction!`;
+    document.getElementById('verdictDeans').textContent = getDeansMessage(deansCount, semsWithGrades);
+    document.getElementById('verdictQuote').textContent = `"${getRand(VERDICT_QUOTES['distinction_' + honorLabel.tier])}"`;
+  } else {
+    banner.classList.add('vtype-latin');
+    const latinLabels = { summa: 'Summa Cum Laude', magna: 'Magna Cum Laude', cum: 'Cum Laude' };
+    const emojis = { summa: '🏆', magna: '🎓', cum: '🎉' };
+    document.getElementById('verdictEmoji').textContent = emojis[honorLabel.tier];
+    document.getElementById('verdictTitle').textContent = `Congratulations! You graduated ${latinLabels[honorLabel.tier]}!`;
+    document.getElementById('verdictSubtitle').textContent = `All grades are in. Overall GWA: ${gwa.toFixed(4)}. This is your final honor standing — you made it! 🎊`;
+    document.getElementById('verdictDeans').textContent = getDeansMessage(deansCount, semsWithGrades);
+    document.getElementById('verdictQuote').textContent = `"${getRand(VERDICT_QUOTES['latin_' + honorLabel.tier])}"`;
+  }
+  banner.classList.add('show');
+}
+
+// ─── EVENTS ──────────────────────────────────────────────────────────────────
+function onGradeInput(si, idx, val) {
+  grades[si][idx] = val;
+  saveGrades();
+  updateSemDisplay(si);
+  updateLatinHonors();
+  updateOverview();
+  showSemToast(si);
+  updateVerdictBanner();
+}
+
+function switchTab(idx) {
+  document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i === idx));
+  document.querySelectorAll('.nav-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadGrades();
+buildPanels();
+SEMESTERS.forEach((sem, si) => {
+  sem.subjects.forEach((s, idx) => {
+    const inp = document.getElementById(`g-${si}-${idx}`);
+    if (inp && grades[si][idx] !== '') inp.value = grades[si][idx];
+  });
+});
+SEMESTERS.forEach((_, si) => updateSemDisplay(si));
+updateLatinHonors();
+updateOverview();
+updateVerdictBanner();
+</script>
+</body>
+</html>
