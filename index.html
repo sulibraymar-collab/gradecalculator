@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CTU Grade Calculator</title>
+<meta name="description" content="Compute your GWA, Dean's List standing and Latin Honors for CTU Carmen BIT-CT. Your grades stay on your device.">
+<meta name="theme-color" content="#2B103C">
+<meta property="og:type" content="website">
+<meta property="og:title" content="CTU Grade Calculator">
+<meta property="og:description" content="Compute your GWA, Dean's List standing and Latin Honors for CTU Carmen BIT-CT.">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23572866'/%3E%3Cpath d='M16 8 5 13l11 5 11-5z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M10 16v5c4 3 8 3 12 0v-5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('ctu_theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light')}catch(e){document.documentElement.dataset.theme='light'}</script>
+<style>
+:root{--bg:#F6F2FA;--card:#fff;--card2:#F1EAF7;--line:#E4D9ED;--tx:#2B103C;--mut:#6E5C84;--ac:#572866;--ac2:#8F529B;--soft:#AC91C0;--btn:#572866;--ok:#2B8A63;--warn:#A9731A;--bad:#B83A5C;--sh:0 1px 2px rgba(43,16,60,.05),0 18px 40px -22px rgba(43,16,60,.28);--nav:rgba(246,242,250,.82)}
+[data-theme=dark]{--bg:#2B103C;--card:#3D2A5D;--card2:rgba(172,145,192,.12);--line:rgba(172,145,192,.22);--tx:#F4EEF9;--mut:#AC91C0;--ac:#AC91C0;--ac2:#8F529B;--btn:#8F529B;--ok:#7FD1A8;--warn:#E3B86A;--bad:#F29AB0;--sh:0 18px 40px -22px rgba(0,0,0,.6);--nav:rgba(43,16,60,.82)}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:Manrope,system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-variant-numeric:tabular-nums;line-height:1.5;transition:background .4s,color .4s;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--ac2);outline-offset:2px;border-radius:8px}
+.i{flex-shrink:0;display:block}
+.wrap{max-width:1040px;margin:0 auto;padding:0 1.25rem}
+section{scroll-margin-top:84px;margin-top:2.75rem}
+h2{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.55rem;letter-spacing:-.01em}
+.sub{color:var(--mut);font-size:.9rem}
+
+/* header + nav */
+header{position:sticky;top:0;z-index:50;background:var(--nav);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:1rem;height:68px}
+.brand{display:flex;align-items:center;gap:.7rem;font-weight:700;letter-spacing:-.01em}
+.mark{width:36px;height:36px;border-radius:11px;background:linear-gradient(140deg,#3D2A5D,#8F529B);color:#fff;display:grid;place-items:center}
+.brand small{display:block;font-weight:500;font-size:.72rem;color:var(--mut);line-height:1.1}
+nav{display:flex;gap:.25rem;margin:0 auto;position:relative}
+nav a{display:flex;align-items:center;gap:.5rem;padding:.5rem .95rem;border-radius:999px;color:var(--mut);text-decoration:none;font-weight:600;font-size:.9rem;transition:color .25s,background .25s}
+nav a:hover{color:var(--tx)}
+nav a.on{color:var(--tx);background:var(--card2)}
+.acts{display:flex;align-items:center;gap:.5rem}
+.ib{height:40px;min-width:40px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:0 .7rem;border:1px solid var(--line);background:var(--card);transition:transform .2s,border-color .2s,background .2s;font-weight:600;font-size:.88rem}
+.ib:hover{border-color:var(--ac2)}
+.ib:active{transform:scale(.95)}
+.ib.pri{background:var(--btn);border-color:var(--btn);color:#fff}
+.ib.pri:hover{filter:brightness(1.1)}
+#nameBtn span{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#themeBtn svg{transition:transform .5s cubic-bezier(.3,1.4,.5,1)}
+#themeBtn:active svg{transform:rotate(90deg) scale(.8)}
+
+/* hero */
+.hero{position:relative;overflow:hidden;margin-top:1.75rem;border-radius:28px;padding:2.4rem 2.2rem 2rem;color:#fff;background:linear-gradient(135deg,#2B103C 0%,#3D2A5D 55%,#572866 100%);box-shadow:var(--sh);border:1px solid rgba(172,145,192,.22)}
+.hero>*{position:relative;z-index:1}
+.hero h1{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:clamp(1.7rem,4.4vw,2.6rem);letter-spacing:-.02em;line-height:1.1}
+.hero p{color:#AC91C0;margin-top:.45rem;font-size:.95rem;max-width:36ch}
+.hero h1,.hero p{margin-right:140px}
+.gwa-big{margin-top:1.8rem}
+.gwa-big label,.lbl{font-size:.8rem;font-weight:600;color:#AC91C0}
+.gwa-big b{display:block;font-size:clamp(3.2rem,11vw,5.2rem);font-weight:800;letter-spacing:-.03em;line-height:1}
+.pill{display:inline-flex;align-items:center;gap:.5rem;padding:.4rem .85rem;border-radius:999px;font-size:.82rem;font-weight:700;border:1px solid var(--c,var(--line));color:var(--c,var(--mut));background:color-mix(in srgb,var(--c,var(--mut)) 13%,transparent);max-width:100%}
+.pill.ok{--c:var(--ok)}.pill.bad{--c:var(--bad)}.pill.gold{--c:var(--warn)}.pill.mut{--c:var(--mut)}
+.hero .pill{margin-top:1rem}
+.hero .pill.ok{--c:#7FD1A8}.hero .pill.bad{--c:#F29AB0}.hero .pill.gold{--c:#E3B86A}.hero .pill.mut{--c:#AC91C0}
+.stats{display:flex;gap:2.2rem;flex-wrap:wrap;margin-top:1.8rem;padding-top:1.4rem;border-top:1px solid rgba(172,145,192,.25)}
+.stats div{min-width:120px}.stats strong{display:block;font-size:1.4rem;font-weight:700}
+.meter{height:6px;border-radius:9px;background:rgba(172,145,192,.25);margin-top:.5rem;overflow:hidden;width:150px}
+.meter i{display:block;height:100%;width:0;border-radius:9px;background:#AC91C0;transition:width .8s cubic-bezier(.2,.7,.2,1)}
+.hero-ic{position:absolute!important;right:2rem;top:2rem;width:96px;height:96px;border-radius:28px;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(172,145,192,.35)}
+.hero-ic svg{width:52px;height:52px}
+.hero>:not(.hero-ic){animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+.hero>:nth-child(3){animation-delay:.08s}.hero>:nth-child(4){animation-delay:.16s}.hero>:nth-child(5){animation-delay:.24s}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+
+/* grades */
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;flex-wrap:wrap;margin-bottom:1.1rem}
+.segs{display:flex;gap:.6rem;flex-wrap:wrap}
+.seg{display:flex;padding:4px;border-radius:14px;background:var(--card2);border:1px solid var(--line)}
+.seg button{padding:.45rem .9rem;border-radius:10px;font-weight:600;font-size:.86rem;color:var(--mut);transition:all .25s;position:relative}
+.seg button.on{background:var(--card);color:var(--tx);box-shadow:0 2px 8px rgba(43,16,60,.15)}
+.seg button.done::after{content:'';position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--ok)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--sh);padding:1.4rem 1.4rem 1.2rem}
+.ptop{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;gap:1rem}
+.ptop h3{font-size:1.02rem;font-weight:700}
+.arrows{display:flex;gap:.4rem}.arrows .ib{padding:0;width:36px;height:36px;min-width:36px}
+.arrows .ib:disabled{opacity:.35;pointer-events:none}
+table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:.9rem}
+th{text-align:left;font-weight:600;font-size:.78rem;color:var(--mut);padding:.55rem .6rem;border-bottom:1px solid var(--line)}
+td{padding:.65rem .6rem;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+th:nth-child(1),td:nth-child(1){width:128px}th:nth-child(3),td:nth-child(3){width:58px;text-align:center}th:nth-child(4),td:nth-child(4){width:92px;text-align:right}
+.code{font-weight:700;font-size:.8rem;color:var(--ac)}
+.d-s{display:none}
+.mcode{display:none;font-size:.72rem;font-weight:700;color:var(--ac)}
+.nstp{display:block;font-size:.72rem;color:var(--mut)}
+tr.ex td:not(:last-child){opacity:.6}
+.g{width:76px;height:40px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);color:var(--tx);font:700 .95rem Manrope,sans-serif;text-align:center;outline:0;transition:border-color .2s,box-shadow .2s,background .2s;-moz-appearance:textfield}
+.g::-webkit-outer-spin-button,.g::-webkit-inner-spin-button{-webkit-appearance:none}
+.g:focus{border-color:var(--ac2);box-shadow:0 0 0 4px color-mix(in srgb,var(--ac2) 22%,transparent)}
+.g.valid{border-color:var(--ok)}.g.warning{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent)}.g.failing,.g.invalid{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.res{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-top:1rem;padding:1.1rem 1.2rem;border-radius:16px;background:var(--card2)}
+.res b{display:block;font-size:2rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.res .lbl{color:var(--mut)}
+.why{list-style:none;font-size:.8rem;color:var(--bad);margin-top:.5rem}
+.swap{animation:swap .4s cubic-bezier(.2,.8,.2,1)}
+.swap tbody tr{animation:fade .45s both;animation-delay:var(--d)}
+@keyframes swap{from{opacity:0;transform:translateX(14px)}}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}}
+
+/* honors */
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.9rem;margin:1.1rem 0}
+.tier{padding:1.1rem;border-radius:18px;border:1.5px solid var(--line);background:var(--card);transition:all .4s cubic-bezier(.2,.8,.2,1)}
+.tier h4{font-family:Fraunces,Georgia,serif;font-size:1.1rem;font-weight:600}
+.tier p{font-size:.82rem;color:var(--mut)}.tier .alt{margin-top:.5rem;padding-top:.5rem;border-top:1px dashed var(--line)}
+.tier.on{background:linear-gradient(140deg,#3D2A5D,#572866);color:#fff;border-color:#8F529B;transform:translateY(-4px);box-shadow:0 18px 36px -18px rgba(87,40,102,.9)}
+.tier.on p{color:#D8C7E6}.tier.on .alt{border-color:rgba(255,255,255,.25)}
+.tier.on.gold{background:linear-gradient(140deg,#3D2A5D,#6B4A24)}
+.hbox{display:flex;align-items:center;gap:1.4rem 2rem;flex-wrap:wrap;padding:1.3rem 1.4rem;border-radius:20px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh)}
+.hbox b{display:block;font-size:2.4rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.hbox .lbl{color:var(--mut)}
+.pbar{flex:1;min-width:170px}
+.pbar .meter{width:100%;background:var(--card2)}.pbar .meter i{background:var(--ac2)}
+.note{margin-top:.9rem;font-size:.86rem;color:var(--mut);padding:.9rem 1.1rem;border-radius:14px;background:var(--card2);border-left:3px solid var(--warn)}
+
+footer{margin-top:3.5rem;padding:2rem 0 3rem;border-top:1px solid var(--line);text-align:center;color:var(--mut);font-size:.82rem}
+footer a{color:var(--ac);font-weight:700;text-decoration:none;border-bottom:1px solid currentColor}
+.fl{display:block;margin-top:2px;font-size:.68rem;font-weight:700;text-align:center}
+.fl.failing,.fl.invalid{color:var(--bad)}.fl.warning{color:var(--warn)}
+#goal{margin-top:1.1rem}#goal .ptop{flex-wrap:wrap}
+.tools{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.2rem}
+
+/* toast */
+#toast{position:fixed;top:80px;right:1rem;z-index:80;width:min(360px,calc(100vw - 2rem));display:flex;gap:.8rem;padding:1rem;border-radius:18px;background:var(--card);border:1px solid var(--c,var(--line));box-shadow:0 24px 50px -16px rgba(20,5,30,.55);transform:translateX(130%);visibility:hidden;pointer-events:none;transition:transform .5s cubic-bezier(.3,1.2,.4,1),visibility .5s;color:var(--tx)}
+#toast.show{transform:none;visibility:visible;pointer-events:auto}
+#toast.ok{--c:var(--ok)}#toast.bad{--c:var(--bad)}#toast.gold{--c:var(--warn)}#toast.mut{--c:var(--ac2)}
+#toast .ti{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);flex-shrink:0}
+#toast h5{font-size:.95rem;font-weight:700}#toast p{font-size:.82rem;color:var(--mut)}#toast q{display:block;margin-top:.35rem;font-size:.8rem;font-style:italic;quotes:none}
+#toast .x{margin-left:auto;align-self:flex-start;color:var(--mut)}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:1rem;background:rgba(20,5,30,.62);backdrop-filter:blur(6px);opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility .3s}
+.modal.show{opacity:1;pointer-events:auto;visibility:visible}
+.sheet{width:min(420px,100%);max-height:94vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:26px;padding:1.6rem;box-shadow:0 40px 80px -20px rgba(0,0,0,.6);transform:translateY(20px) scale(.96);transition:transform .45s cubic-bezier(.3,1.3,.5,1)}
+.modal.show .sheet{transform:none}
+.sheet h3{font-family:Fraunces,Georgia,serif;font-size:1.5rem;font-weight:600;margin:.3rem 0 .3rem}
+.sheet input{width:100%;height:50px;margin:1.1rem 0;padding:0 1rem;border-radius:14px;border:1.5px solid var(--line);background:var(--card2);color:var(--tx);font:600 1rem Manrope,sans-serif;outline:0}
+.sheet input:focus{border-color:var(--ac2);box-shadow:0 0 0 4px color-mix(in srgb,var(--ac2) 22%,transparent)}
+.row{display:flex;gap:.6rem}.row .ib{flex:1;height:46px}
+#card{display:block;height:min(52vh,540px);aspect-ratio:9/16;margin:1rem auto;border-radius:18px;box-shadow:0 20px 40px -18px rgba(0,0,0,.6)}
+#expSheet{width:min(440px,100%);text-align:center}
+#expSel{width:100%;height:46px;margin-top:.9rem;padding:0 .9rem;border-radius:14px;border:1.5px solid var(--line);background:var(--card2);color:var(--tx);font:600 .92rem Manrope,sans-serif;outline:0}
+#expSel:focus{border-color:var(--ac2);box-shadow:0 0 0 4px color-mix(in srgb,var(--ac2) 22%,transparent)}
+
+/* mobile */
+@media(max-width:720px){
+ body{padding-bottom:84px}
+ header{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--bg)}
+ nav{position:fixed;bottom:0;left:0;right:0;margin:0;justify-content:space-around;padding:.5rem .6rem calc(.5rem + env(safe-area-inset-bottom));background:var(--nav);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);z-index:60}
+ nav a{flex-direction:column;gap:2px;font-size:.72rem;padding:.4rem 1.2rem;border-radius:14px}
+ .brand small,#nameBtn span,.ib.pri b{display:none}
+ .hero{padding:1.7rem 1.3rem 1.5rem;border-radius:24px}.hero-ic{right:1rem;top:1.4rem;width:56px;height:56px;border-radius:18px}.hero-ic svg{width:30px;height:30px}
+ .gwa-big{margin-top:1.6rem}
+ .hero h1,.hero p{margin-right:76px}
+ .panel{padding:1rem .75rem}
+ th:nth-child(1),td:nth-child(1){display:none}
+ .d-f{display:none}.d-s{display:inline}.mcode{display:block}
+ .g{width:66px}
+ #toast{top:auto;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateY(160%)}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header>
+ <div class="wrap bar">
+  <div class="brand"><div class="mark"><i data-ic="cap" data-s="20"></i></div><div>Grade Calculator<small>CTU Carmen, BIT-CT</small></div></div>
+  <nav id="nav">
+   <a href="#overview" class="on"><i data-ic="grid"></i>Overview</a>
+   <a href="#grades"><i data-ic="book"></i>Grades</a>
+   <a href="#honors"><i data-ic="award"></i>Honors</a>
+  </nav>
+  <div class="acts">
+   <button class="ib" id="nameBtn" title="Edit name" aria-label="Edit name"><i data-ic="user"></i><span>Add name</span></button>
+   <button class="ib" id="themeBtn" title="Toggle dark mode" aria-label="Toggle dark mode"></button>
+   <button class="ib pri" id="expBtn" title="Export card"><i data-ic="image"></i><b>Export card</b></button>
+  </div>
+ </div>
+</header>
+
+<main class="wrap">
+ <section id="overview" style="margin-top:0">
+  <div class="hero">
+   <div class="hero-ic" aria-hidden="true"><i data-ic="cap" data-s="52"></i></div>
+   <h1 id="heroTitle">Your academic standing</h1>
+   <p id="heroSub">Enter your grades and see your honors update live.</p>
+   <div class="gwa-big"><label>Overall GWA</label><b id="heroGwa">—</b></div>
+   <div id="heroPill"></div>
+   <div class="stats">
+    <div><span class="lbl">Dean's List semesters</span><strong id="stDeans">0 of 8</strong></div>
+    <div><span class="lbl">Grades entered</span><strong id="stEnt">0 of 0</strong><div class="meter"><i id="stBar"></i></div></div>
+   </div>
+  </div>
+ </section>
+
+ <section id="grades">
+  <div class="head">
+   <div><h2>Grades</h2><p class="sub">Enter a grade from 1.0 to 5.0 for each subject.</p></div>
+   <div class="segs">
+    <div class="seg" id="yearSeg"><button>1st year</button><button>2nd year</button><button>3rd year</button><button>4th year</button></div>
+    <div class="seg" id="termSeg"><button>1st sem</button><button>2nd sem</button></div>
+   </div>
+  </div>
+  <div class="panel" id="semCard">
+   <div class="ptop"><h3 id="semTitle"></h3><div class="arrows"><button class="ib" id="prevBtn" aria-label="Previous semester"><i data-ic="left"></i></button><button class="ib" id="nextBtn" aria-label="Next semester"><i data-ic="right"></i></button></div></div>
+   <table><thead><tr><th>Code</th><th>Subject</th><th>Units</th><th>Grade</th></tr></thead><tbody id="semBody"></tbody></table>
+   <div class="res"><div><span class="lbl">Semester GWA</span><b id="semGwa">—</b></div><div id="semStatus"></div></div>
+  </div>
+ </section>
+
+ <section id="honors">
+  <h2>Honors</h2><p class="sub">Based on your overall GWA across all semesters.</p>
+  <div class="tiers" id="tiers"></div>
+  <div class="hbox">
+   <div><span class="lbl">Overall GWA</span><b id="hGwa">—</b></div>
+   <div class="pbar"><span class="lbl">Progress toward honors</span><div class="meter"><i id="hBar"></i></div><p class="sub" id="hInfo" style="font-size:.8rem;margin-top:.4rem"></p></div>
+   <div id="hPill"></div>
+  </div>
+  <div class="note" id="hNote" hidden></div>
+  <div class="panel" id="goal">
+   <div class="ptop"><h3>What do I need?</h3><div class="seg" id="goalSeg"><button data-g="1.75">Cum Laude</button><button data-g="1.45">Magna</button><button data-g="1.2">Summa</button></div></div>
+   <div class="res"><div><span class="lbl" id="gLbl"></span><b id="gNeed">—</b></div><div id="gStat"></div></div>
+   <p class="sub" id="gNote" style="margin-top:.7rem"></p>
+  </div>
+ </section>
+</main>
+
+<footer><div class="wrap"><div class="tools"><button class="ib" id="exBtn"><i data-ic="download"></i>Backup</button><button class="ib" id="imBtn">Restore</button><button class="ib" id="rsBtn">Reset all</button><input type="file" id="bkFile" accept="application/json,.json" hidden></div>Designed and developed by <a href="https://www.facebook.com/raymar.sulib.3" target="_blank" rel="noopener">Raymar B. Sulib</a><br>For academic use by CTU Carmen BIT-CT students</div></footer>
+
+<div id="toast" role="status"><div class="ti" id="tIcon"></div><div><h5 id="tTitle"></h5><p id="tMsg"></p><q id="tQuote"></q></div><button class="x" id="tClose" aria-label="Dismiss"><i data-ic="x"></i></button></div>
+
+<div class="modal" id="nameModal"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="nameH">
+ <div class="mark"><i data-ic="user" data-s="20"></i></div>
+ <h3 id="nameH">What should we call you?</h3><p class="sub">Your name appears on the dashboard and on your exported card. It stays on this device.</p>
+ <input id="nameIn" maxlength="40" placeholder="Full name" autocomplete="name">
+ <div class="row"><button class="ib" id="nameSkip">Skip</button><button class="ib pri" id="nameOk">Save name</button></div>
+</div></div>
+
+<div class="modal" id="expModal"><div class="sheet" id="expSheet" role="dialog" aria-modal="true" aria-labelledby="expH">
+ <h3 id="expH">Share card</h3><p class="sub">9:16 image, sized for stories and reels.</p>
+ <select id="expSel" aria-label="Choose what to export"></select>
+ <canvas id="card" width="1080" height="1920"></canvas>
+ <div class="row"><button class="ib" id="expClose">Close</button><button class="ib" id="shareBtn"><i data-ic="share"></i>Share</button><button class="ib pri" id="dlBtn"><i data-ic="download"></i>Download</button></div>
+</div></div>
+
+<script>
+const SEMESTERS = [
+  {
+    label: "1st Semester SY 2023-2024",
+    subjects: [
+      { code: "GEC-PC",       desc: "Purposive Communication", units: 3 },
+      { code: "GEC-STS",      desc: "Science, Technology and Society", units: 3 },
+      { code: "GEC-US",       desc: "Understanding the Self", units: 3 },
+      { code: "DRAW 111",     desc: "Fundamentals of Technical Drawing and Sketching", short: "Tech Drawing & Sketching", units: 1 },
+      { code: "COMPTECH 111", desc: "Computer Electronics", units: 7 },
+      { code: "AST 111",      desc: "Fundamentals of Electrical and Electronics", short: "Electrical & Electronics", units: 3 },
+      { code: "PATHFIT 1",    desc: "Physical Activities Towards Health and Fitness 1: Movement Competency Training", short: "PATHFIT 1", units: 2 },
+      { code: "NSTP 1",       desc: "National Service Training Program 1 (CWTS 1/LTS 1/ROTC 1)", short: "NSTP 1", units: 3, nstp: true },
+    ]
+  },
+  {
+    label: "2nd Semester SY 2023-2024",
+    subjects: [
+      { code: "CompTech 122", desc: "Computer Systems", units: 7 },
+      { code: "DRAW 122",     desc: "Advanced Technical Drawing and Blueprint Reading", short: "Adv. Tech Drawing", units: 1 },
+      { code: "COMP 1",       desc: "Office Productivity Application Software", short: "Office Productivity", units: 3 },
+      { code: "AST 122",      desc: "Digital Electronics", units: 3 },
+      { code: "GEC-RPH",      desc: "Readings in Philippine History", short: "Philippine History", units: 3 },
+      { code: "GEC-E",        desc: "Ethics", units: 3 },
+      { code: "PATHFIT 2",    desc: "Physical Activities Towards Health and Fitness 2: Exercise-Based Fitness Activities", short: "PATHFIT 2", units: 2 },
+      { code: "NSTP 2",       desc: "National Service Training Program 2 (CWTS 2/LTS 2/ROTC 2)", short: "NSTP 2", units: 3, nstp: true },
+    ]
+  },
+  {
+    label: "1st Semester SY 2024-2025",
+    subjects: [
+      { code: "GEC-TCW",      desc: "The Contemporary World", units: 3 },
+      { code: "GEC-AA",       desc: "Art Appreciation", units: 3 },
+      { code: "GEE-LIE",      desc: "Living in the IT Era", units: 3 },
+      { code: "COMPTECH 213", desc: "Computer Network and Security", units: 7 },
+      { code: "CTC 211",      desc: "Fundamentals of Programming", short: "Fund. of Programming", units: 2 },
+      { code: "DRAW 213",     desc: "Computer-Aided Design 1 (CAD 1)", short: "CAD 1", units: 1 },
+      { code: "AST 213",      desc: "Basic Pneumatics / Hydraulics", units: 1 },
+      { code: "PATHFIT 3",    desc: "Physical Activities Towards Health and Fitness 3: Dance/Sports/Martial Arts/Group Exercise/Outdoor and Adventure Activities", short: "PATHFIT 3", units: 2 },
+    ]
+  },
+  {
+    label: "2nd Semester SY 2024-2025",
+    subjects: [
+      { code: "COMPTECH 224", desc: "Programming", units: 7 },
+      { code: "CTC 222",      desc: "Programming Logic and Design", short: "Prog. Logic & Design", units: 1 },
+      { code: "CTC 223",      desc: "Logic Circuits", units: 1 },
+      { code: "DRAW 224",     desc: "Computer-Aided Design 2 (CAD 2)", short: "CAD 2", units: 1 },
+      { code: "AST 224",      desc: "Programmable Logic Controller", short: "PLC", units: 1 },
+      { code: "GEE-ES",       desc: "Environmental Science", units: 3 },
+      { code: "GEC-MMW",      desc: "Mathematics in the Modern World", short: "Math in Modern World", units: 3 },
+      { code: "PATHFIT 4",    desc: "Physical Activities Towards Health and Fitness 4: Dance/Sports/Martial Arts/Group Exercise/Outdoor and Adventure Activities", short: "PATHFIT 4", units: 2 },
+    ]
+  },
+  {
+    label: "1st Semester SY 2025-2026",
+    subjects: [
+      { code: "AST 315",      desc: "Workshop Management", units: 3 },
+      { code: "GEE-FE",       desc: "Functional English", units: 3 },
+      { code: "IM 311",       desc: "Fundamentals of Research", short: "Fund. of Research", units: 3 },
+      { code: "IM 312",       desc: "Industrial Psychology and Group Dynamics", short: "Ind. Psychology", units: 3 },
+      { code: "IM 313",       desc: "Occupational Safety and Health", short: "Occ. Safety & Health", units: 3 },
+      { code: "IM 314",       desc: "Shop Supervision and Apprenticeship Training", short: "Shop Supervision", units: 3 },
+      { code: "COMPTECH 315", desc: "Microprocessor Systems", units: 7 },
+      { code: "FOLA 1",       desc: "Foreign Language 1 (Nihongo/Korean/Chinese/Spanish/German 1)", short: "Foreign Language 1", units: 3 },
+    ]
+  },
+  {
+    label: "2nd Semester SY 2025-2026",
+    subjects: [
+      { code: "CompTech 326", desc: "Embedded Systems", units: 7 },
+      { code: "IM 325",       desc: "Industrial Organization and Management", short: "Ind. Org. & Mgmt", units: 3 },
+      { code: "IM 326",       desc: "Personnel Administration", units: 3 },
+      { code: "IM 327",       desc: "Organizational Behavior and Work Ethics", short: "Org. Behavior", units: 3 },
+      { code: "IM 328",       desc: "Product Output (Research)", units: 3 },
+      { code: "AST 326",      desc: "Emerging Technologies", units: 3 },
+      { code: "GEC-LWR",      desc: "Life and Works of Rizal", short: "Life & Works of Rizal", units: 3 },
+      { code: "FOLA 2",       desc: "Foreign Language 2 (Nihongo/Korean/Chinese/Spanish/German 2)", short: "Foreign Language 2", units: 3 },
+      { code: "GEE-TEM",      desc: "The Entrepreneurial Mind", units: 3 },
+    ]
+  },
+  {
+    label: "1st Semester SY 2026-2027",
+    subjects: [
+      { code: "OJT 411", desc: "On-the-Job Training 1", units: 15 },
+    ]
+  },
+  {
+    label: "2nd Semester SY 2026-2027",
+    subjects: [
+      { code: "OJT 422", desc: "On-the-Job Training 2", units: 15 },
+    ]
+  },
+];
+const SEM_QUOTES = {
+  qualified: [
+    "Consistency is the key to greatness. Keep it up!",
+    "Another semester, another win. You're on a roll!",
+    "Hard work pays off. This is proof.",
+    "Stay focused — you're building something great semester by semester.",
+    "Excellence isn't an accident. This shows it."
+  ],
+  notqualified: [
+    "One semester doesn't define your whole story. Keep going!",
+    "Every stumble is a setup for a comeback. Rise up.",
+    "The road to success isn't always straight. You're still on it.",
+    "Don't let one setback write your ending. Keep pushing forward.",
+    "Reflect, regroup, and come back stronger next semester."
+  ]
+};
+const VERDICT_QUOTES = {
+  latin_summa: [
+    "Perfect excellence. You didn't just meet the standard — you set it.",
+    "The pinnacle of academic achievement. Truly extraordinary.",
+    "Some aim for the stars. You built a rocket and flew past them."
+  ],
+  latin_magna: [
+    "Outstanding dedication. Magna Cum Laude — you earned every bit of it.",
+    "You turned consistency into greatness. Wear this honor proudly.",
+    "Hard work, discipline, and brilliance — that's what Magna Cum Laude looks like."
+  ],
+  latin_cum: [
+    "Cum Laude — proof that persistence and effort truly pay off.",
+    "You pushed through every challenge and came out with honors. Incredible.",
+    "Not everyone finishes with distinction. You did. Be proud."
+  ],
+  distinction_summa: [
+    "Your GWA is elite. Academic Distinction with Highest Honors — still a crown worth wearing.",
+    "One grade stood between you and Latin Honors, but your achievement still shines.",
+    "Highest distinction. Four years of hard work, undeniable."
+  ],
+  distinction_magna: [
+    "Academic Distinction with High Honors — your effort speaks volumes.",
+    "Not every road to honors is straight. Yours is still remarkable.",
+    "High Honors isn't a consolation — it's a real achievement. Own it."
+  ],
+  distinction_cum: [
+    "Academic Distinction with Honors — a recognition you genuinely earned.",
+    "Honors isn't a lesser path. It's proof you showed up and gave it your all.",
+    "Every grade is a story. Yours ends with distinction. Be proud."
+  ],
+  nogwa: [
+    "Grades are just numbers. Your journey, growth, and effort define you far more.",
+    "Not every chapter ends where we planned — but every chapter teaches us something.",
+    "The degree itself is the achievement. Don't let a number take that from you."
+  ],
+  failed: [
+    "A failed grade doesn't define you. What you do next does. Keep going.",
+    "Everyone stumbles. The ones who rise again are the ones who truly grow.",
+    "This is not your final chapter. Regroup, reflect, and come back stronger."
+  ]
+};
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const CAP=['M22 10 12 5 2 10l10 5 10-5z','M6 12v5c3 2 9 2 12 0v-5'];
+const P={cap:CAP.map(d=>`<path d="${d}"/>`).join(''),sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',download:'<path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',grid:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',book:'<path d="M2 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H2z"/><path d="M22 4h-7a3 3 0 0 0-3 3v14a2 2 0 0 1 2-2h8z"/>',award:'<circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 8 5-3 5 3-1.5-8"/>',star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',check:'<path d="m5 12 5 5 9-10"/>',x:'<path d="M6 6l12 12M18 6 6 18"/>',alert:'<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17.5v.01"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',left:'<path d="m15 6-6 6 6 6"/>',right:'<path d="m9 6 6 6-6 6"/>',share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>',image:'<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="1.6"/><path d="m21 15-5-5L5 21"/>'};
+document.body.insertAdjacentHTML('afterbegin',`<svg width="0" height="0" style="position:absolute"><defs>${Object.entries(P).map(([k,v])=>`<symbol id="i-${k}" viewBox="0 0 24 24">${v}</symbol>`).join('')}</defs></svg>`);
+const ic=(n,s=18)=>`<svg class="i" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-${n}"/></svg>`;
+const hydrate=r=>r.querySelectorAll('[data-ic]').forEach(e=>e.outerHTML=ic(e.dataset.ic,e.dataset.s||18));hydrate(document);
+
+/* state + storage */
+const grades=SEMESTERS.map(s=>s.subjects.map(()=>''));
+let cur=0,name='',vDone=false,tmr;
+const K='ctu_grades_v1';
+try{(JSON.parse(localStorage.getItem(K))||[]).forEach((a,si)=>grades[si]&&a.forEach((g,i)=>{if(grades[si][i]!==undefined)grades[si][i]=/^\d*\.?\d*$/.test(String(g))?String(g):''}));name=localStorage.getItem('ctu_name')||''}catch(e){}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(grades))}catch(e){}};
+const rand=a=>a[Math.floor(Math.random()*a.length)];
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+/* logic */
+const valid=g=>g!==''&&+g>=1&&+g<=5;
+const gwaOf=l=>{let w=0,u=0;l.forEach(si=>SEMESTERS[si].subjects.forEach((s,i)=>{const g=grades[si][i];if(s.nstp||!valid(g))return;w+=+g*s.units;u+=s.units}));return u?Math.round(w/u*1e4)/1e4:null};
+const ALL=SEMESTERS.map((_,i)=>i),semGWA=si=>gwaOf([si]),allGWA=()=>gwaOf(ALL);
+const counts=()=>{let e=0,t=0;SEMESTERS.forEach((sem,si)=>sem.subjects.forEach((s,i)=>{if(s.nstp)return;t++;if(valid(grades[si][i]))e++}));return{e,t}};
+const semDone=si=>SEMESTERS[si].subjects.every((s,i)=>s.nstp||valid(grades[si][i]));
+function flags(){const f=[],d=[];SEMESTERS.forEach((sem,si)=>sem.subjects.forEach((s,i)=>{const g=grades[si][i];if(s.nstp||!valid(g))return;if(+g>=3.1)f.push(`${s.code} (${(+g).toFixed(1)})`);else if(+g>2.5)d.push(`${s.code} (${(+g).toFixed(1)})`)}));return{f,d}}
+const honorOf=g=>g<=1.2?{tier:'summa',latin:'Summa Cum Laude',dist:'With Highest Honors'}:g<=1.45?{tier:'magna',latin:'Magna Cum Laude',dist:'With High Honors'}:g<=1.75?{tier:'cum',latin:'Cum Laude',dist:'With Honors'}:null;
+function standing(){const gwa=allGWA();if(gwa===null)return{type:'pending',gwa,name:'Not yet computed'};const{f,d}=flags(),h=honorOf(gwa);
+ if(f.length)return{type:'failed',gwa,name:'Not eligible for honors',list:f};
+ if(!h)return{type:'none',gwa,name:'No honor'};
+ if(d.length)return{type:'distinction',gwa,tier:h.tier,name:h.dist,list:d,title:'Academic Distinction'};
+ return{type:'latin',gwa,tier:h.tier,name:h.latin,title:'Latin Honors'}}
+function deans(si){const r=[];let all=true;SEMESTERS[si].subjects.forEach((s,i)=>{if(s.nstp)return;const g=grades[si][i];if(!valid(g)){all=false;return}if(+g>=3.1)r.push(`Failed grade in ${s.code}: ${(+g).toFixed(1)}`);else if(+g>2.5)r.push(`Grade above 2.5 in ${s.code}: ${(+g).toFixed(1)}`)});const g=semGWA(si);if(g!==null&&g>1.75)r.push(`GWA of ${g.toFixed(4)} is above the 1.750 cutoff`);return{ok:all&&!r.length,all,r}}
+const deansCount=()=>ALL.filter(si=>deans(si).ok).length;
+
+/* ui helpers */
+function num(el,to,d=4){if(to==null){el.textContent='—';el._v=null;return}const from=el._v??to;el._v=to;cancelAnimationFrame(el._r);if(reduce||from===to){el.textContent=to.toFixed(d);return}const t0=performance.now(),f=t=>{const k=Math.min(1,(t-t0)/550),e=1-Math.pow(1-k,3);el.textContent=(from+(to-from)*e).toFixed(d);if(k<1)el._r=requestAnimationFrame(f)};el._r=requestAnimationFrame(f)}
+const pill=(c,i,t)=>`<span class="pill ${c}">${ic(i,16)}<span>${t}</span></span>`;
+function badge(st){return{latin:['ok','award',st.name],distinction:['gold','star',`Academic Distinction: ${st.name}`],failed:['bad','alert',`Disqualified: failed grade in ${(st.list||[])[0]||''}`],none:['mut','alert','No honor: GWA above 1.750'],pending:['mut','clock','Not yet computed']}[st.type]}
+const pct=g=>g==null?0:Math.max(0,Math.min(100,(1.75-g)/.75*100));
+
+/* semester view */
+function renderSem(){const sem=SEMESTERS[cur];$('#semTitle').textContent=sem.label;
+ $$('#yearSeg button').forEach((b,i)=>b.classList.toggle('on',i===cur>>1));$$('#termSeg button').forEach((b,i)=>b.classList.toggle('on',i===(cur&1)));
+ $('#prevBtn').disabled=cur===0;$('#nextBtn').disabled=cur===SEMESTERS.length-1;
+ $('#semBody').innerHTML=sem.subjects.map((s,i)=>`<tr class="${s.nstp?'ex':''}" style="--d:${i*45}ms"><td><span class="code">${s.code}</span></td><td><span class="mcode">${s.code}</span><span class="d-f">${s.desc}</span><span class="d-s">${s.short||s.desc}</span>${s.nstp?'<span class="nstp">Excluded from GWA</span>':''}</td><td>${s.units}</td><td><input class="g" id="g-${i}" type="number" min="1" max="5" step="0.1" placeholder="—" inputmode="decimal" aria-label="Grade for ${s.code}" value="${grades[cur][i]}" oninput="onGrade(${i},this.value)" aria-describedby="fl-${i}"><small class="fl" id="fl-${i}"></small></td></tr>`).join('');
+ const c=$('#semCard');c.classList.remove('swap');void c.offsetWidth;c.classList.add('swap');updateSem();updateChips()}
+function updateSem(){SEMESTERS[cur].subjects.forEach((s,i)=>{const el=$('#g-'+i);if(!el)return;const v=grades[cur][i],fl=$('#fl-'+i);el.className='g';el.removeAttribute('aria-invalid');fl.textContent='';fl.className='fl';if(v==='')return;const k=!valid(v)?'invalid':+v>=3.1?'failing':+v>2.5?'warning':'valid';el.classList.add(k);if(k!=='valid'){fl.className='fl '+k;fl.textContent={invalid:'1.0 to 5.0',failing:'Failed',warning:'Above 2.5'}[k];if(k==='invalid')el.setAttribute('aria-invalid','true')}});
+ const g=semGWA(cur),d=deans(cur),box=$('#semStatus');num($('#semGwa'),g);
+ if(g===null)box.innerHTML=pill('mut','clock','Awaiting grades');
+ else if(!d.all&&!d.r.length)box.innerHTML=pill('mut','clock','Enter all grades');
+ else if(d.ok)box.innerHTML=pill('ok','check',`Dean's Lister, ${g<=1.2?'With Highest Honors':g<=1.45?'With High Honors':'With Honors'}`);
+ else box.innerHTML=pill('bad','x','Not qualified')+`<ul class="why">${d.r.map(x=>`<li>${x}</li>`).join('')}</ul>`}
+function updateChips(){$$('#termSeg button').forEach((b,i)=>b.classList.toggle('done',semDone((cur>>1)*2+i)));$$('#yearSeg button').forEach((b,i)=>b.classList.toggle('done',semDone(i*2)&&semDone(i*2+1)))}
+
+/* overview + honors */
+function updateAll(){const st=standing(),{e,t}=counts();
+ const first=name.split(' ')[0];$('#heroTitle').textContent=name?`Hello, ${name}`:'Your academic standing';
+ $('#heroSub').textContent=st.type==='pending'?'Enter your grades and see your honors update live.':name?'Here is where you stand right now.':'Add your name to personalize this page and your card.';
+ num($('#heroGwa'),st.gwa);const b=badge(st);$('#heroPill').innerHTML=pill(b[0],b[1],b[2]);
+ $('#stDeans').textContent=`${deansCount()} of 8`;$('#stEnt').textContent=`${e} of ${t}`;$('#stBar').style.width=(t?e/t*100:0)+'%';
+ num($('#hGwa'),st.gwa);$('#hBar').style.width=pct(st.gwa)+'%';$('#hInfo').textContent=`${e} of ${t} subjects entered`;$('#hPill').innerHTML=pill(b[0],b[1],b[2]);
+ $$('.tier').forEach(el=>{el.classList.toggle('on',(st.type==='latin'||st.type==='distinction')&&el.dataset.t===st.tier);el.classList.toggle('gold',st.type==='distinction')});
+ const n=$('#hNote');n.hidden=!(st.type==='distinction'||st.type==='failed');
+ if(!n.hidden)n.textContent=st.type==='distinction'?`A grade above 2.5 in ${st.list.join(', ')} rules out Latin Honors. Your GWA qualifies you for Academic Distinction instead.`:`A failed grade (3.1 or above) in ${st.list.join(', ')} disqualifies you from both Latin Honors and Academic Distinction.`;
+ $('#nameBtn span').textContent=name||'Add name';updateGoal()}
+$('#tiers').innerHTML=[['summa','Summa Cum Laude','1.000 to 1.200','With Highest Honors'],['magna','Magna Cum Laude','1.201 to 1.450','With High Honors'],['cum','Cum Laude','1.451 to 1.750','With Honors']].map(([k,n,r,d])=>`<div class="tier" data-t="${k}"><h4>${n}</h4><p>GWA ${r}</p><p class="alt">Academic Distinction: ${d}</p></div>`).join('');
+
+/* toast */
+let tt;function toast(kind,icon,title,msg,quote,sticky){const t=$('#toast');t.className=kind;$('#tIcon').innerHTML=ic(icon,20);$('#tTitle').textContent=title;$('#tMsg').textContent=msg;$('#tQuote').textContent=quote?`"${quote}"`:'';requestAnimationFrame(()=>t.classList.add('show'));clearTimeout(tt);if(!sticky)tt=setTimeout(()=>t.classList.remove('show'),7000)}
+$('#tClose').onclick=()=>{$('#toast').classList.remove('show');if($('#tTitle').dataset.v)vDone=true};
+function notifyNow(){const{e,t}=counts(),st=standing(),dc=deansCount(),sw=ALL.filter(i=>semGWA(i)!==null).length;
+ if(e>=t&&t>0){if(vDone)return;const dm=dc===sw?`Dean's List in all ${sw} semesters.`:dc===0?`Dean's List not reached in any semester.`:`Dean's List in ${dc} of ${sw} semesters.`;
+  const m={latin:['ok','award',`Projected honor: ${st.name}`,`All grades are in. Overall GWA ${st.gwa.toFixed(4)}. ${dm}`,rand(VERDICT_QUOTES['latin_'+st.tier]||[])],distinction:['gold','star',`Academic Distinction: ${st.name}`,`Overall GWA ${st.gwa.toFixed(4)}. ${st.list.join(', ')} is above 2.5, so Latin Honors does not apply. ${dm}`,rand(VERDICT_QUOTES['distinction_'+st.tier]||[])],failed:['bad','alert','Disqualified from honors',`Failed grade in ${(st.list||[]).join(', ')}. ${dm}`,rand(VERDICT_QUOTES.failed)],none:['mut','award','No Latin honor',`Overall GWA ${st.gwa.toFixed(4)} is above 1.750. ${dm}`,rand(VERDICT_QUOTES.nogwa)]}[st.type];
+  toast(...m,true);$('#tTitle').dataset.v=1;return}
+ vDone=false;if(!semDone(cur)){$('#toast').classList.remove('show');return}
+ const d=deans(cur),g=semGWA(cur);delete $('#tTitle').dataset.v;
+ d.ok?toast('ok','check',`Dean's Lister, ${g<=1.2?'With Highest Honors':g<=1.45?'With High Honors':'With Honors'}`,`${SEMESTERS[cur].label}, GWA ${g.toFixed(4)}`,rand(SEM_QUOTES.qualified)):toast('mut','clock','Not qualified this semester',`${SEMESTERS[cur].label}, GWA ${g.toFixed(4)}`,rand(SEM_QUOTES.notqualified))}
+window.onGrade=(i,v)=>{const wS=semDone(cur),wA=allDone();grades[cur][i]=v;save();updateSem();updateChips();updateAll();clearTimeout(tmr);const nS=semDone(cur),nA=allDone();if((!wS&&nS)||(!wA&&nA)||(!nS&&!nA))tmr=setTimeout(notifyNow,700)};
+
+/* nav, theme, modals */
+$$('#yearSeg button').forEach((b,i)=>b.onclick=()=>{cur=i*2+(cur&1);renderSem()});$$('#termSeg button').forEach((b,i)=>b.onclick=()=>{cur=(cur>>1)*2+i;renderSem()});
+$('#prevBtn').onclick=()=>{cur--;renderSem()};$('#nextBtn').onclick=()=>{cur++;renderSem()};
+const links=$$('#nav a');
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)links.forEach(a=>a.classList.toggle('on',a.hash==='#'+e.target.id))}),{rootMargin:'-45% 0px -50% 0px'});['overview','grades','honors'].forEach(id=>io.observe($('#'+id)));
+const themeIcon=()=>{$('#themeBtn').innerHTML=ic(document.documentElement.dataset.theme==='dark'?'sun':'moon',19)};themeIcon();
+$('#themeBtn').onclick=()=>{const d=document.documentElement,n=d.dataset.theme==='dark'?'light':'dark';d.dataset.theme=n;try{localStorage.setItem('ctu_theme',n)}catch(e){}themeIcon()};
+let lastF=null;
+const open=(m,on=true)=>{const el=$(m);if(!on&&!el.classList.contains('show'))return;el.classList.toggle('show',on);if(on){lastF=document.activeElement;setTimeout(()=>{const f=el.querySelector('input,button');f&&f.focus()},80)}else if(lastF&&lastF.focus)lastF.focus()};
+let afterName=null;
+function askName(cb){afterName=cb||null;$('#nameIn').value=name;open('#nameModal');setTimeout(()=>$('#nameIn').focus(),250)}
+function setName(v){name=v.trim().replace(/\s+/g,' ');try{localStorage.setItem('ctu_name',name);localStorage.setItem('ctu_asked','1')}catch(e){}open('#nameModal',false);updateAll();const cb=afterName;afterName=null;if(cb&&name)cb()}
+$('#nameBtn').onclick=()=>askName();$('#nameOk').onclick=()=>setName($('#nameIn').value);$('#nameSkip').onclick=()=>{try{localStorage.setItem('ctu_asked','1')}catch(e){}open('#nameModal',false);afterName=null};
+$('#nameIn').onkeydown=e=>{if(e.key==='Enter')setName(e.target.value)};
+addEventListener('keydown',e=>{if(e.key==='Escape'){open('#nameModal',false);open('#expModal',false)}});
+$$('.modal').forEach(m=>m.onclick=e=>{if(e.target===m)open('#'+m.id,false)});
+addEventListener('keydown',e=>{if(e.key!=='Tab')return;const m=$('.modal.show');if(!m)return;const f=[...m.querySelectorAll('input,button')].filter(x=>x.getClientRects().length);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}});
+
+/* export card */
+const ORD=['1st','2nd','3rd','4th'],ay=si=>(SEMESTERS[si].label.match(/\d{4}-\d{4}/)||[''])[0],dlHon=g=>g<=1.2?'With Highest Honors':g<=1.45?'With High Honors':'With Honors';
+const semOk=si=>deans(si).ok,yrOk=yi=>!!SEMESTERS[yi*2+1]&&semOk(yi*2)&&semOk(yi*2+1),semName=si=>`${ORD[si>>1]} Year, ${ORD[si&1]} Sem`;
+const allOk=()=>{const st=standing();return allDone()&&(st.type==='latin'||st.type==='distinction')};
+function expFill(){const sel=$('#expSel'),ok=allOk(),q=ALL.filter(semOk),
+  opt=(v,t,e,why)=>`<option value="${v}"${e?'':' disabled'}>${t}${e?'':` (${why})`}</option>`;
+ sel.innerHTML=`<optgroup label="Semester">${ALL.map(si=>opt('s'+si,`${semName(si)} · AY ${ay(si)}`,semOk(si),semDone(si)?'not eligible':'incomplete')).join('')}</optgroup><optgroup label="Whole year">${[0,1,2,3].filter(yi=>SEMESTERS[yi*2+1]).map(yi=>opt('y'+yi,`${ORD[yi]} Year · AY ${ay(yi*2)}`,yrOk(yi),'needs both sems')).join('')}</optgroup><optgroup label="Overall">${opt('a','All years · Latin honors',ok,allDone()?'not eligible':'unlocks when all grades are in')}</optgroup>`;
+ const k=ok?'a':semOk(cur)?'s'+cur:q.length?'s'+q[q.length-1]:null;if(k)sel.value=k;return k}
+async function drawCard(key){
+ await Promise.all(['600 80px Fraunces','800 80px Manrope','500 30px Manrope','600 30px Manrope','700 30px Manrope'].map(f=>document.fonts.load(f)));
+ const c=$('#card'),x=c.getContext('2d'),W=1080,H=1920,st=standing();
+ const g=x.createLinearGradient(0,0,0,H);[[0,'#2B103C'],[.5,'#3D2A5D'],[.82,'#572866'],[1,'#8F529B']].forEach(([o,k])=>g.addColorStop(o,k));x.fillStyle=g;x.fillRect(0,0,W,H);
+ const rg=x.createRadialGradient(900,380,0,900,380,720);rg.addColorStop(0,'rgba(172,145,192,.30)');rg.addColorStop(1,'rgba(172,145,192,0)');x.fillStyle=rg;x.fillRect(0,0,W,H);
+ const rr=(a,b,w,h,r)=>{x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()};
+ const fit=(s,wt,fam,max,min,w)=>{let z=max;do{x.font=`${wt} ${z}px ${fam}`;z-=4}while(x.measureText(s).width>w&&z>min)};
+ const M=96,IW=W-M*2,L=M+48;x.textBaseline='alphabetic';x.textAlign='left';
+ rr(M,200,88,88,26);x.fillStyle='rgba(255,255,255,.1)';x.fill();x.strokeStyle='rgba(255,255,255,.4)';x.lineWidth=2;x.stroke();
+ x.save();x.translate(M+19,219);x.scale(2.1,2.1);x.strokeStyle='#fff';x.lineWidth=1.7;x.lineCap='round';x.lineJoin='round';CAP.forEach(d=>x.stroke(new Path2D(d)));x.restore();
+ x.fillStyle='#fff';x.font='700 36px Manrope';x.fillText('Cebu Technological University',M+116,238);x.fillStyle='#AC91C0';x.font='500 28px Manrope';x.fillText('Carmen Campus, BIT Computer Technology',M+116,278);
+ const nm=(name||'Your name')+'!';
+ x.fillStyle='#AC91C0';x.font='600 38px Manrope';x.fillText('Congratulations,',M,640);
+ x.fillStyle='#fff';fit(nm,'600','Fraunces',132,60,IW);x.fillText(nm,M,770);
+ rr(M,860,IW,640,48);x.fillStyle='rgba(255,255,255,.08)';x.fill();x.strokeStyle='rgba(255,255,255,.28)';x.lineWidth=2;x.stroke();
+ const lab=(t,y)=>{x.fillStyle='#AC91C0';x.font='600 30px Manrope';x.fillText(t,L,y)},big=(t,y,mx)=>{x.fillStyle='#fff';fit(t,'600','Fraunces',mx,40,IW-96);x.fillText(t,L,y)},line=y=>{x.fillStyle='rgba(255,255,255,.2)';x.fillRect(L,y,IW-96,2)};
+ const k=key&&key[0],n=+(key||'').slice(1);
+ if(k==='y'){
+  lab("You're eligible for the Dean's List",934);big(`Academic Year ${ay(n*2)}`,1024,76);line(1084);
+  [0,1].forEach(j=>{const si=n*2+j,gw=semGWA(si),y=1190+j*170;
+   lab(`${ORD[j]} Semester`,y);x.textAlign='right';x.fillStyle='#AC91C0';x.font='600 30px Manrope';x.fillText('GWA',W-M-48,y-10);x.textAlign='left';
+   x.fillStyle='#fff';fit(dlHon(gw),'600','Fraunces',46,30,IW-96-300);x.fillText(dlHon(gw),L,y+60);
+   x.textAlign='right';x.fillStyle='#fff';x.font='800 72px Manrope';x.fillText(gw.toFixed(4),W-M-48,y+64);x.textAlign='left';
+   if(!j){x.fillStyle='rgba(255,255,255,.1)';x.fillRect(L,y+112,IW-96,1)}})}
+ else{
+  const sem=k==='s',gw=sem?semGWA(n):st.gwa;
+  lab(sem?"You're eligible for the Dean's List":"You're eligible for",934);
+  big(sem?dlHon(gw):st.name,1032,84);
+  x.fillStyle='#AC91C0';x.font='500 32px Manrope';x.fillText(sem?`Academic Year ${ay(n)}, ${ORD[n&1]} Semester`:`${st.type==='latin'?'Latin Honors':'Academic Distinction'}, all semesters`,L,1084);
+  line(1134);lab('General Weighted Average',1202);
+  x.fillStyle='#fff';x.font='800 196px Manrope';x.fillText(gw===null?'—':gw.toFixed(4),M+40,1402)}
+ x.textAlign='center';x.fillStyle='#D8C7E6';x.font='600 28px Manrope';x.fillText('CTU Grade Calculator',W/2,1820)}
+function openExport(){if(!name)return askName(openExport);const k=expFill();if(!k)return toast('mut','alert','Nothing to export yet',"Finish a semester with Dean's List standing to generate a card.",'');
+ $('#shareBtn').style.display=navigator.canShare&&navigator.canShare({files:[new File([''],'a.png',{type:'image/png'})]})?'':'none';drawCard(k).then(()=>open('#expModal'))}
+$('#expSel').onchange=e=>drawCard(e.target.value);
+const blob=()=>new Promise(r=>$('#card').toBlob(r,'image/png'));
+const fname=()=>`ctu-honors-${(name||'card').toLowerCase().replace(/[^a-z0-9]+/g,'-')}-${$('#expSel').value||'card'}.png`;
+$('#expBtn').onclick=openExport;$('#expClose').onclick=()=>open('#expModal',false);
+$('#dlBtn').onclick=async()=>{const a=document.createElement('a');a.href=URL.createObjectURL(await blob());a.download=fname();a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
+$('#shareBtn').onclick=async()=>{try{await navigator.share({files:[new File([await blob()],fname(),{type:'image/png'})],title:'My academic standing'})}catch(e){}};
+
+/* target calculator */
+let goalT=1.75;try{goalT=+localStorage.getItem('ctu_goal')||1.75}catch(e){}
+const allDone=()=>{const{e,t}=counts();return t>0&&e>=t};
+$$('#goalSeg button').forEach(b=>b.onclick=()=>{goalT=+b.dataset.g;try{localStorage.setItem('ctu_goal',goalT)}catch(e){}updateGoal()});
+function updateGoal(){let w=0,u=0,r=0,n=0;SEMESTERS.forEach((sem,si)=>sem.subjects.forEach((s,i)=>{if(s.nstp)return;const g=grades[si][i];if(valid(g)){w+=+g*s.units;u+=s.units}else{r+=s.units;n++}}));
+ const{f,d}=flags(),T=goalT,lat=!d.length,cap=lat?2.5:3,N=$('#gNeed'),S=$('#gStat'),O=$('#gNote');
+ $$('#goalSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.g===T));
+ $('#gLbl').textContent='Average needed in remaining grades';
+ if(f.length){N.textContent='—';S.innerHTML=pill('bad','alert','Failed grade');O.textContent=`A failed grade in ${f[0]} disqualifies you from all honors.`;return}
+ if(!r){const g=allGWA();N.textContent='—';S.innerHTML=g!==null&&g<=T?pill('ok','check','Target reached'):pill('bad','x','Target missed');O.textContent=g===null?'Enter your grades to see what you need.':`All grades are entered. Your GWA is ${g.toFixed(4)}.`;return}
+ const need=Math.floor((T*(u+r)-w)/r*1e4)/1e4;
+ if(need<1){N.textContent='—';S.innerHTML=pill('bad','x','Out of reach');O.textContent=`Even straight 1.0s in the ${n} remaining subjects would give a GWA of ${((w+r)/(u+r)).toFixed(4)}.`;return}
+ N.textContent=Math.min(need,cap).toFixed(4);
+ S.innerHTML=need<=1.2?pill('gold','star','Tough but possible'):pill('ok','check','Within reach');
+ O.textContent=`Across ${n} remaining subjects (${r} units), every grade must also be ${cap.toFixed(1)} or better${lat?'':', since a grade above 2.5 already rules out Latin Honors. This targets Academic Distinction'}.`}
+
+/* backup, restore, reset */
+const bk=$('#bkFile');
+$('#exBtn').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({app:'ctu-grade-calculator',v:1,name,grades})],{type:'application/json'}));a.download='ctu-grades-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
+$('#imBtn').onclick=()=>bk.click();
+bk.onchange=async()=>{const f=bk.files[0];bk.value='';if(!f)return;try{const d=JSON.parse(await f.text());if(d.app!=='ctu-grade-calculator'||!Array.isArray(d.grades))throw 0;if(!confirm('Replace your current grades with this backup?'))return;grades.forEach((row,si)=>row.forEach((_,i)=>{const g=String((d.grades[si]||[])[i]??'');row[i]=/^\d*\.?\d*$/.test(g)?g:''}));name=typeof d.name==='string'?d.name.slice(0,40):'';try{localStorage.setItem('ctu_name',name)}catch(e){}save();vDone=false;renderSem();updateAll();toast('ok','check','Backup restored','Your grades have been loaded.','')}catch(e){toast('bad','alert',"Couldn't read that file",'Choose a backup exported from this app.','')}};
+$('#rsBtn').onclick=()=>{if(!confirm('Clear all grades and your name from this device?'))return;grades.forEach(r=>r.fill(''));name='';try{localStorage.removeItem(K);localStorage.removeItem('ctu_name')}catch(e){}vDone=false;delete $('#tTitle').dataset.v;$('#toast').classList.remove('show');renderSem();updateAll()};
+
+/* init */
+renderSem();updateAll();
+try{if(!localStorage.getItem('ctu_asked')&&!name)setTimeout(()=>askName(),500)}catch(e){}
+</script>
+</body>
+</html>
